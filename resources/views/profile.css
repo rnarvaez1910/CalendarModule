@@ -1,0 +1,11 @@
+
+.select2-selection{
+    border: 1px solid #ced4da !important;
+}
+
+.select2-selection__rendered{
+    display: flex !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    align-items: center;
+}
