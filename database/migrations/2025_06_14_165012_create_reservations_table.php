@@ -15,6 +15,14 @@ class CreateReservationsTable extends Migration
     {
         Schema::create('reservations', function (Blueprint $table) {
             $table->id();
+            $table->string('professor_name');
+            $table->string('professor_email');
+            $table->string('asignature');
+            $table->string('classroom');
+            $table->string('assets');
+            $table->dateTime('reservation_start');
+            $table->dateTime('reservation_end');
+            $table->boolean('approved');
             $table->timestamps();
         });
     }

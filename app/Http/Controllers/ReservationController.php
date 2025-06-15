@@ -12,19 +12,10 @@ class ReservationController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function findAll()
     {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        $reservations = Reservation::all();
+        return response()->json($reservations);
     }
 
     /**
@@ -33,32 +24,19 @@ class ReservationController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function create(Request $request)
     {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Reservation  $reservation
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Reservation $reservation)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Reservation  $reservation
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Reservation $reservation)
-    {
-        //
-    }
+        $reservationInfo = $request->validate(['professor_name' => 'required|string',
+            'professor_email' => 'required|email',
+            'asignature' => 'required|string',
+            'classroom' => 'required|string', 
+            'assets' => 'required|string', 
+            'reservation_start' => 'required|date', 
+            'reservation_end' => 'required|date',
+            'approved' => 'required|boolean']);
+        $reservation = Reservation::create($reservationInfo);
+        return response()->json($reservation, 201);
+    } 
 
     /**
      * Update the specified resource in storage.
@@ -78,7 +56,7 @@ class ReservationController extends Controller
      * @param  \App\Reservation  $reservation
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Reservation $reservation)
+    public function delete(Reservation $reservation)
     {
         //
     }
