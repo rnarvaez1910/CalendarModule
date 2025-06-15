@@ -48,7 +48,7 @@
                     var date = new Date(info.date);
                     var day = date.getDay(); // 0=domingo, 1=lunes,...,6=sábado
                     var diff = (day === 0 ? -6 : 1 -
-                    day); // Si es domingo, retrocede 6 días, si no, retrocede hasta lunes
+                        day); // Si es domingo, retrocede 6 días, si no, retrocede hasta lunes
                     date.setDate(date.getDate() + diff);
                     // Formatea la fecha a YYYY-MM-DD
                     var mondayStr = date.toISOString().split('T')[0];
