@@ -30,10 +30,14 @@ class ReservationController extends Controller
             'professor_email' => 'required|email',
             'asignature' => 'required|string',
             'classroom' => 'required|string', 
-            'assets' => 'required|string', 
+            'video_beam_hdmi' => 'required|boolean', 
+            'video_beam_vga' => 'required|boolean',
+            'laptop' => 'required|boolean',
+            'electrical_extension' => 'required|boolean',
+            'adapter' => 'required|boolean',
             'reservation_start' => 'required|date', 
             'reservation_end' => 'required|date',
-            'approved' => 'required|boolean']);
+            ]);
         $reservation = Reservation::create($reservationInfo);
         return response()->json($reservation, 201);
     } 

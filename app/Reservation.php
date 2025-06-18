@@ -11,7 +11,11 @@ class Reservation extends Model
         'professor_email',
         'asignature', 
         'classroom', 
-        'assets', 
+        'video_beam_hdmi',
+        'video_beam_vga',
+        'laptop',
+        'electrical_extension',
+        'adapter',
         'reservation_start', 
         'reservation_end', 
         'approved'];
@@ -21,8 +25,15 @@ class Reservation extends Model
         'professor_email' => 'string', 
         'asignature' => 'string', 
         'classroom' => 'string', 
-        'assets' => 'string', 
+        'video_beam_hdmi' => 'boolean',
+        'video_beam_vga' => 'boolean',
+        'laptop' => 'boolean',
+        'electrical_extension' => 'boolean',
+        'adapter' => 'boolean',
         'reservation_start' => 'datetime', 
         'reservation_end' => 'datetime', 
         'approved' => 'boolean'];
+    protected $attributes = [
+        'approved'=> false,
+    ];
 }

@@ -19,10 +19,108 @@
 @endsection
 
 @section('admincontent')
+    <form class="d-flex flex-column gap-2" id="reservation_form">
+        <div>
+            <label for="reservation_start">Hora de inicio</label>
+            <input type="datetime-local" name="reservation_start" id= "reservation_start" />
+        </div>
+        <div>
+            <label for="reservation_end">Hora de finalización</label>
+            <input type="datetime-local" name="reservation_end" id= "reservation_end" />
+        </div>
+        <div>
+            <label for="professor_name">Nombre del profesor</label>
+            <input type="text" name="professor_name" id="professor_name" />
+        </div>
+        <div>
+            <label for="professor_name">Correo del profesor</label>
+            <input type="email" name="professor_email" id="professor_email" />
+        </div>
+        <div>
+            <label for="classroom">Aula</label>
+            <input type="text" name="classroom" id="classroom" />
+        </div>
+        <div>
+            <label for="asignature">Asignatura</label>
+            <input type="text" name="asignature" id="asignature" />
+        </div>
+        <div>
+            <label for="video_beam_hdmi">Video Beam HDMI</label>
+            <input type="checkbox" name="video_beam_hdmi" id="video_beam_hdmi" />
+        </div>
+        <div>
+            <label for="video_beam_vga">Video Beam VGA</label>
+            <input type="checkbox" name="video_beam_vga" id="video_beam_vga" />
+        </div>
+        <div>
+            <label for="laptop">Laptop</label>
+            <input type="checkbox" name="laptop" id="laptop" />
+        </div>
+        <div>
+            <label for="electrical_extension">Extensión eléctrica</label>
+            <input type="checkbox" name="electrical_extension" id="electrical_extension" />
+        </div>
+        <div>
+            <label for="adapter">Adaptador</label>
+            <input type="checkbox" name="adapter" id="adapter" />
+        </div>
+        <div>
+            <button>Enviar</button>
+        </div>
+    </form>
+    <div id="calendar"></div>
     <script>
         var calendar;
-        document.addEventListener('DOMContentLoaded', function() {
-            var calendarEl = document.getElementById('calendar');
+        $(document).ready(function() {
+            // Recibir data del formulario
+            let reservation = {
+                professor_name: "",
+                professor_email: "",
+                classroom: "",
+                asignature: "",
+                video_beam_hdmi: false,
+                video_beam_vga: false,
+                laptop: false,
+                electrical_extension: false,
+                reservation_start: new Date().toISOString(),
+                reservation_end: new Date().toISOString()
+            }
+            $('#professor_name').on("change", function(event) {
+                reservation.professor_name = event.target.value
+            })
+            $('#professor_email').on("change", function(event) {
+                reservation.professor_email = event.target.value
+            })
+            $('#classroom').on("change", function(event) {
+                reservation.classroom = event.target.value
+            })
+            $('#asignature').on("change", function(event) {
+                reservation.asignature = event.target.value
+            })
+            $('#video_beam_hdmi').on("change", function(event) {
+                reservation.video_beam_hdmi = event.target.checked
+            })
+            $('#video_beam_vga').on("change", function(event) {
+                reservation.video_beam_vga = event.target.checked
+            })
+            $('#laptop').on("change", function(event) {
+                reservation.laptop = event.target.checked
+            })
+            $('#electrical_extension').on("change", function(event) {
+                reservation.electrical_extension = event.target.checked
+            })
+            $('#adapter').on("change", function(event) {
+                reservation.adapter = event.target.checked
+            })
+            $('#reservation_start').on("change", function(event) {
+                reservation.reservation_start = event.target.value
+                console.log(reservation);
+            })
+            $('#reservation_end').on("change", function(event) {
+                reservation.reservation_end = event.target.value
+                console.log(reservation);
+            })
+            let calendarEl = document.getElementById('calendar');
             calendar = new FullCalendar.Calendar(calendarEl, {
                 locale: 'Es',
                 initialView: 'dayGridMonth',
@@ -43,18 +141,7 @@
                         buttonText: 'Mes'
                     },
                 },
-                dateClick: function(info) {
-                    // Calcula el lunes de la semana del día seleccionado
-                    var date = new Date(info.date);
-                    var day = date.getDay(); // 0=domingo, 1=lunes,...,6=sábado
-                    var diff = (day === 0 ? -6 : 1 -
-                        day); // Si es domingo, retrocede 6 días, si no, retrocede hasta lunes
-                    date.setDate(date.getDate() + diff);
-                    // Formatea la fecha a YYYY-MM-DD
-                    var mondayStr = date.toISOString().split('T')[0];
-                    // Cambia la vista a la semana personalizada comenzando en ese lunes
-                    calendar.changeView('customWeek', mondayStr);
-                },
+                timeZone: "UTC",
                 slotMinTime: '07:00:00',
                 slotMaxTime: '23:45:00',
                 // slotDuration: '00:30',
@@ -68,82 +155,39 @@
                 eventMinHeight: 25,
             });
             calendar.render();
-        });
-        var a = 0;
 
-        function botonCrear() {
-            calendar.addEvent({
-                id: 'a' + a,
-                title: 'titulo',
-                start: new Date(),
-                end: new Date(new Date().getTime() + 3600000)
-            });
-            a++;
-        }
-    </script>
-    <form class="d-flex flex-column gap-2">
-        <?php
-        abstract class Usuario
-        {
-            public $nombre;
-            protected $apellido;
-            private $email;
-            public function saludo()
-            {
-                return 'hola';
+            function loadReservations() {
+                calendar.removeAllEvents();
+                fetch("http://localhost/Backend/public/api/reservation").then(function(result) {
+                        return result.json();
+                    })
+                    .then(function(result) {
+                        for (let i = 0; i < result.length; i++) {
+                            calendar.addEvent({
+                                id: result[i].id,
+                                title: result[i].professor_name + " - " + result[i].asignature + " - " +
+                                    result[i].classroom,
+                                start: result[i].reservation_start,
+                                end: result[i].reservation_end
+                            });
+                        }
+                    })
+                    .catch(console.log);
             }
-        }
-        class Cliente extends Usuario
-        {
-            public $telefono;
-            public $direccion;
-        }
-        class Empleado extends Usuario
-        {
-            public $cargo;
-            public $sueldo;
-        }
-        $cliente = new Cliente();
-        $cliente2 = new Cliente();
-        $cliente->nombre = '1verth0';
-        $cliente2->nombre = 'reismon';
-        echo $cliente->nombre . ' es el que tiene mas plata de todos <br>';
-        echo $cliente2->nombre . ' no tiene plata porque lo aposto en caballo';
-        ?>
-        <div>
-            <input type="date" />
-        </div>
-        <div class="d-flex gap-2">
-            <input style="width:3rem;" type="number" max="12" min="0" />
-            <span>:</span>
-            <input style="width:3rem;" type="number" max="59" min="0" />
-            <span>-</span>
-            <input style="width:3rem;" type="number" max="12" min="0" />
-            <span>:</span>
-            <input style="width:3rem;" type="number" max="59" min="0" />
-        </div>
-        <div>
-            <label>VideoBeam</label>
-            <input type="checkbox" />
-            <input type="radio" name="nombre" />
-            <input type="radio" name="nombre" />
-        </div>
-        <div>
-            <label>Laptop</label>
-            <input type="checkbox" />
-        </div>
-        <div>
-            <label>Extension Electrica</label>
-            <input type="checkbox" />
-        </div>
-        <div>
-            <label>Adaptador</label>
-            <input type="checkbox" />
-        </div>
-        <div>
-            <button>Enviar</button>
-        </div>
-    </form>
-    <button onclick="botonCrear()">Crear nueva reserva</button>
-    <div id="calendar"></div>
+            $('#reservation_form').on("submit", function(event) {
+                event.preventDefault();
+                console.log(reservation);
+                fetch("http://localhost/Backend/public/api/reservation", {
+                        method: "POST",
+                        body: JSON.stringify(reservation),
+                        headers: {
+                            Accept: "application/json",
+                            "Content-Type": "application/json",
+                        }
+                    }).then(loadReservations)
+                    .catch(console.log);
+            })
+            loadReservations();
+        });
+    </script>
 @endsection
