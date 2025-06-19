@@ -85,38 +85,38 @@
                 reservation_start: new Date().toISOString(),
                 reservation_end: new Date().toISOString()
             }
-            $('#professor_name').on("change", function(event) {
+            $('#professor_name').on("input", function(event) {
                 reservation.professor_name = event.target.value
             })
-            $('#professor_email').on("change", function(event) {
+            $('#professor_email').on("input", function(event) {
                 reservation.professor_email = event.target.value
             })
-            $('#classroom').on("change", function(event) {
+            $('#classroom').on("input", function(event) {
                 reservation.classroom = event.target.value
             })
-            $('#asignature').on("change", function(event) {
+            $('#asignature').on("input", function(event) {
                 reservation.asignature = event.target.value
             })
-            $('#video_beam_hdmi').on("change", function(event) {
+            $('#video_beam_hdmi').on("input", function(event) {
                 reservation.video_beam_hdmi = event.target.checked
             })
-            $('#video_beam_vga').on("change", function(event) {
+            $('#video_beam_vga').on("input", function(event) {
                 reservation.video_beam_vga = event.target.checked
             })
-            $('#laptop').on("change", function(event) {
+            $('#laptop').on("input", function(event) {
                 reservation.laptop = event.target.checked
             })
-            $('#electrical_extension').on("change", function(event) {
+            $('#electrical_extension').on("input", function(event) {
                 reservation.electrical_extension = event.target.checked
             })
-            $('#adapter').on("change", function(event) {
+            $('#adapter').on("input", function(event) {
                 reservation.adapter = event.target.checked
             })
-            $('#reservation_start').on("change", function(event) {
+            $('#reservation_start').on("input", function(event) {
                 reservation.reservation_start = event.target.value
                 console.log(reservation);
             })
-            $('#reservation_end').on("change", function(event) {
+            $('#reservation_end').on("input", function(event) {
                 reservation.reservation_end = event.target.value
                 console.log(reservation);
             })
@@ -156,7 +156,7 @@
             });
             calendar.render();
 
-            function loadReservations() {
+            function loadReservations(r = 0) {
                 calendar.removeAllEvents();
                 fetch("http://localhost/Backend/public/api/reservation").then(function(result) {
                         return result.json();
@@ -172,7 +172,11 @@
                             });
                         }
                     })
-                    .catch(console.log);
+                    .catch(function() {
+                        if (r < 3) {
+                            loadReservations(r + 1);
+                        }
+                    });
             }
             $('#reservation_form').on("submit", function(event) {
                 event.preventDefault();
