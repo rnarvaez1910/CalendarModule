@@ -19,6 +19,46 @@
 @endsection
 
 @section('admincontent')
+    <div id="reservation_dropdown" class="p-2 border bg-white position-fixed rounded">
+        <div id="reservation_name">
+            Profesor - Fecha
+        </div>
+        <div id="reservation_professor">
+            Profesor
+        </div>
+        <div id="reservation_asignature">
+            Asignatura
+        </div>
+        <div id="reservation_classroom">
+            Aula
+        </div>
+        <div id="reservation_date">
+            Fecha
+        </div>
+        <div id="reservation_assets">
+            <div>
+                <label>Video Beam</label>
+                <input id="video_beam_asset_ro" type="checkbox" onclick="return false">
+            </div>
+            <div>
+                <label>Cable HDMI</label>
+                <input id="cable_asset_ro" type="checkbox" onclick="return false">
+            </div>
+            <div>
+                <label>Laptop</label>
+                <input id="laptop_asset_ro" type="checkbox" onclick="return false">
+            </div>
+            <div>
+                <label>Extension Electrica</label>
+                <input id="extension_asset_ro" type="checkbox" onclick="return false">
+            </div>
+            <div>
+                <label>Adaptador</label>
+                <input id="adapter_asset_ro" type="checkbox" onclick="return false">
+            </div>
+        </div>
+    </div>
+    {{-- Formulario de reserva --}}
     <form class="d-flex flex-column gap-2" id="reservation_form">
         <div>
             <label for="reservation_start">Hora de inicio</label>
@@ -45,12 +85,12 @@
             <input type="text" name="asignature" id="asignature" />
         </div>
         <div>
-            <label for="video_beam_hdmi">Video Beam HDMI</label>
-            <input type="checkbox" name="video_beam_hdmi" id="video_beam_hdmi" />
+            <label for="video_beam">Video Beam</label>
+            <input type="checkbox" name="video_beam" id="video_beam" />
         </div>
         <div>
-            <label for="video_beam_vga">Video Beam VGA</label>
-            <input type="checkbox" name="video_beam_vga" id="video_beam_vga" />
+            <label for="cable_hdmi">Cable HDMI</label>
+            <input type="checkbox" name="cable_hdmi" id="cable_hdmi" />
         </div>
         <div>
             <label for="laptop">Laptop</label>
@@ -70,7 +110,7 @@
     </form>
     <div id="calendar"></div>
     <script>
-        var calendar;
+        let calendar;
         $(document).ready(function() {
             // Recibir data del formulario
             let reservation = {
@@ -78,8 +118,8 @@
                 professor_email: "",
                 classroom: "",
                 asignature: "",
-                video_beam_hdmi: false,
-                video_beam_vga: false,
+                video_beam: false,
+                cable_hdmi: false,
                 laptop: false,
                 electrical_extension: false,
                 reservation_start: new Date().toISOString(),
@@ -97,11 +137,11 @@
             $('#asignature').on("input", function(event) {
                 reservation.asignature = event.target.value
             })
-            $('#video_beam_hdmi').on("input", function(event) {
-                reservation.video_beam_hdmi = event.target.checked
+            $('#video_beam').on("input", function(event) {
+                reservation.video_beam = event.target.checked
             })
-            $('#video_beam_vga').on("input", function(event) {
-                reservation.video_beam_vga = event.target.checked
+            $('#cable_hdmi').on("input", function(event) {
+                reservation.cable_hdmi = event.target.checked
             })
             $('#laptop').on("input", function(event) {
                 reservation.laptop = event.target.checked
@@ -127,19 +167,28 @@
                 headerToolbar: {
                     left: 'prev next',
                     center: 'title',
-                    right: 'dayGridMonth customWeek'
+                    right: 'dayGridMonth timeGridWeek timeGridDay'
                 },
                 views: {
-                    customWeek: {
-                        type: 'timeGrid',
-                        duration: {
-                            days: 7
-                        },
-                        buttonText: 'Semana'
-                    },
                     dayGridMonth: {
                         buttonText: 'Mes'
                     },
+                    timeGridWeek: {
+                        buttonText: 'Semana'
+                    },
+                    timeGridDay: {
+                        buttonText: 'Día'
+                    },
+                },
+                eventClick: function(event) {
+                    let dimesions = event.el.getBoundingClientRect()
+                    $("#reservation_dropdown").css({
+                        top: dimesions.top,
+                        left: dimesions.left + dimesions.width,
+                        zIndex: 100
+                    })
+                    $("#reservation_dropdown").show();
+                    console.log(dimesions);
                 },
                 timeZone: "UTC",
                 slotMinTime: '07:00:00',

@@ -19,8 +19,8 @@ class CreateReservationsTable extends Migration
             $table->string('professor_email');
             $table->string('asignature');
             $table->string('classroom');
-            $table->boolean('video_beam_hdmi');
-            $table->boolean('video_beam_vga');
+            $table->boolean('video_beam');
+            $table->boolean('cable_hdmi');
             $table->boolean('laptop');
             $table->boolean('electrical_extension');
             $table->boolean('adapter');
