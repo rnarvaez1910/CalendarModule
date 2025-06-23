@@ -16,3 +16,4 @@ Route::get('/reservation', 'ReservationController@findAll');
 Route::put('/reservation/{id}', 'ReservationController@update');
 Route::post('/reservation', 'ReservationController@create');
 Route::delete('/reservation/{id}', 'ReservationController@delete');
+Route::get('/assets','AssetsController@findAllAssets');

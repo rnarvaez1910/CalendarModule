@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\AssetsReservation;
 
 class Reservation extends Model
 {
@@ -10,12 +11,7 @@ class Reservation extends Model
         'professor_name',
         'professor_email',
         'asignature', 
-        'classroom', 
-        'video_beam',
-        'cable_hdmi',
-        'laptop',
-        'electrical_extension',
-        'adapter',
+        'classroom',
         'reservation_start', 
         'reservation_end', 
         'approved'];
@@ -24,16 +20,16 @@ class Reservation extends Model
         'professor_name' => 'string', 
         'professor_email' => 'string', 
         'asignature' => 'string', 
-        'classroom' => 'string', 
-        'video_beam' => 'boolean',
-        'cable_hdmi' => 'boolean',
-        'laptop' => 'boolean',
-        'electrical_extension' => 'boolean',
-        'adapter' => 'boolean',
+        'classroom' => 'string',
         'reservation_start' => 'datetime', 
         'reservation_end' => 'datetime', 
         'approved' => 'boolean'];
     protected $attributes = [
         'approved'=> false,
     ];
+
+    public function assets_reservation()
+    {
+        return $this->hasMany(AssetsReservation::class);
+    }
 }

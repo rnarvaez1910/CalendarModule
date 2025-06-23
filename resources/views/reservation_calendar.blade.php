@@ -137,21 +137,6 @@
             $('#asignature').on("input", function(event) {
                 reservation.asignature = event.target.value
             })
-            $('#video_beam').on("input", function(event) {
-                reservation.video_beam = event.target.checked
-            })
-            $('#cable_hdmi').on("input", function(event) {
-                reservation.cable_hdmi = event.target.checked
-            })
-            $('#laptop').on("input", function(event) {
-                reservation.laptop = event.target.checked
-            })
-            $('#electrical_extension').on("input", function(event) {
-                reservation.electrical_extension = event.target.checked
-            })
-            $('#adapter').on("input", function(event) {
-                reservation.adapter = event.target.checked
-            })
             $('#reservation_start').on("input", function(event) {
                 reservation.reservation_start = event.target.value
                 console.log(reservation);

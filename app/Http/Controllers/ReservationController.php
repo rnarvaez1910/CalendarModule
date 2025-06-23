@@ -14,7 +14,7 @@ class ReservationController extends Controller
      */
     public function findAll()
     {
-        $reservations = Reservation::all();
+        $reservations = Reservation::with('assetsReservation.asset')->get();
         return response()->json($reservations);
     }
 
@@ -29,12 +29,7 @@ class ReservationController extends Controller
         $reservationInfo = $request->validate(['professor_name' => 'required|string',
             'professor_email' => 'required|email',
             'asignature' => 'required|string',
-            'classroom' => 'required|string', 
-            'video_beam' => 'required|boolean', 
-            'cable_hdmi' => 'required|boolean',
-            'laptop' => 'required|boolean',
-            'electrical_extension' => 'required|boolean',
-            'adapter' => 'required|boolean',
+            'classroom' => 'required|string',
             'reservation_start' => 'required|date', 
             'reservation_end' => 'required|date',
             ]);
