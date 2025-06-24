@@ -263,8 +263,6 @@
     <script>
         let calendar;
         $(document).ready(function() {
-            const a = [1, 2, 3, "asdf", false, "hola", 22.5];
-
             $('#classroom').select2();
             // Recibir data del formulario
             let reservation = {
