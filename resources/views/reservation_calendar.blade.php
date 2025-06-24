@@ -19,7 +19,7 @@
 @endsection
 
 @section('admincontent')
-    <div id="reservation_dropdown" class="p-2 border bg-white position-fixed rounded">
+    {{-- <div id="reservation_dropdown" class="p-2 border bg-white position-fixed rounded">
         <div id="reservation_name">
             Profesor - Fecha
         </div>
@@ -57,7 +57,7 @@
                 <input id="adapter_asset_ro" type="checkbox" onclick="return false">
             </div>
         </div>
-    </div>
+    </div> --}}
     {{-- Formulario de reserva --}}
     <form class="d-flex flex-column gap-2" id="reservation_form">
         <div>
@@ -76,9 +76,160 @@
             <label for="professor_name">Correo del profesor</label>
             <input type="email" name="professor_email" id="professor_email" />
         </div>
-        <div>
+        <div class="w-25">
             <label for="classroom">Aula</label>
-            <input type="text" name="classroom" id="classroom" />
+            <select id="classroom" name="classroom" class="w-100">
+                <option value="A01">
+                    A01
+                </option>
+                <option value="A02">
+                    A02
+                </option>
+                <option value="A03">
+                    A03
+                </option>
+                <option value="A04">
+                    A04
+                </option>
+                <option value="A05">
+                    A05
+                </option>
+                <option value="A06">
+                    A06
+                </option>
+                <option value="A07">
+                    A07
+                </option>
+                <option value="A08">
+                    A08
+                </option>
+                <option value="A09">
+                    A09
+                </option>
+                <option value="A10">
+                    A10
+                </option>
+                <option value="A11">
+                    A11
+                </option>
+                <option value="A12">
+                    A12
+                </option>
+                <option value="A13">
+                    A13
+                </option>
+                <option value="A14">
+                    A14
+                </option>
+                <option value="A15">
+                    A15
+                </option>
+                <option value="A16">
+                    A16
+                </option>
+                <option value="A17">
+                    A17
+                </option>
+                <option value="A18">
+                    A18
+                </option>
+                <option value="A19">
+                    A19
+                </option>
+                <option value="A20">
+                    A20
+                </option>
+                <option value="A21">
+                    A21
+                </option>
+                <option value="A22">
+                    A22
+                </option>
+                <option value="A23">
+                    A23
+                </option>
+                <option value="A24">
+                    A24
+                </option>
+                <option value="A25">
+                    A25
+                </option>
+                <option value="A26">
+                    A26
+                </option>
+                <option value="A27">
+                    A27
+                </option>
+                <option value="A28">
+                    A28
+                </option>
+                <option value="A29">
+                    A29
+                </option>
+                <option value="A30">
+                    A30
+                </option>
+                <option value="A31">
+                    A31
+                </option>
+                <option value="A32">
+                    A32
+                </option>
+                <option value="A33">
+                    A33
+                </option>
+                <option value="A34">
+                    A34
+                </option>
+                <option value="A35">
+                    A35
+                </option>
+                <option value="A36">
+                    A36
+                </option>
+                <option value="A37">
+                    A37
+                </option>
+                <option value="A38">
+                    A38
+                </option>
+                <option value="A39">
+                    A39
+                </option>
+                <option value="A40">
+                    A40
+                </option>
+                <option value="A41">
+                    A41
+                </option>
+                <option value="A42">
+                    A42
+                </option>
+                <option value="L01">
+                    L01
+                </option>
+                <option value="L02">
+                    L02
+                </option>
+                <option value="L03">
+                    L03
+                </option>
+                <option value="L04">
+                    L04
+                </option>
+                <option value="L06">
+                    L06
+                </option>
+                <option value="SD">
+                    SD
+                </option>
+                <option value="SE1">
+                    SE1
+                </option>
+                <option value="SE2">
+                    SE2
+                </option>
+            </select>
         </div>
         <div>
             <label for="asignature">Asignatura</label>
@@ -112,6 +263,9 @@
     <script>
         let calendar;
         $(document).ready(function() {
+            const a = [1, 2, 3, "asdf", false, "hola", 22.5];
+
+            $('#classroom').select2();
             // Recibir data del formulario
             let reservation = {
                 professor_name: "",
@@ -122,6 +276,7 @@
                 cable_hdmi: false,
                 laptop: false,
                 electrical_extension: false,
+                adapter: false,
                 reservation_start: new Date().toISOString(),
                 reservation_end: new Date().toISOString()
             }
@@ -166,14 +321,28 @@
                     },
                 },
                 eventClick: function(event) {
-                    let dimesions = event.el.getBoundingClientRect()
-                    $("#reservation_dropdown").css({
-                        top: dimesions.top,
-                        left: dimesions.left + dimesions.width,
-                        zIndex: 100
-                    })
-                    $("#reservation_dropdown").show();
-                    console.log(dimesions);
+                    // cargar los valores al formulario
+                    $("#reservation_start").val(event.event.extendedProps.reservation
+                        .reservation_start);
+                    $("#reservation_end").val(event.event.extendedProps.reservation.reservation_end);
+                    $("#professor_name").val(event.event.extendedProps.reservation.professor_name);
+                    $("#professor_email").val(event.event.extendedProps.reservation.professor_email);
+                    $("#classroom").val(event.event.extendedProps.reservation.classroom);
+                    $("#asignature").val(event.event.extendedProps.reservation.asignature);
+                    $("#video_beam").val(event.event.extendedProps.reservation.video_beam);
+                    $("#cable_hdmi").val(event.event.extendedProps.reservation.cable_hdmi);
+                    $("#laptop").val(event.event.extendedProps.reservation.laptop);
+                    $("#electrical_extension").val(event.event.extendedProps.reservation
+                        .electrical_extension);
+                    $("#adapter").val(event.event.extendedProps.reservation.adapter);
+                    // let dimesions = event.el.getBoundingClientRect()
+                    // $("#reservation_dropdown").css({
+                    //     top: dimesions.top,
+                    //     left: dimesions.left + dimesions.width,
+                    //     zIndex: 100
+                    // })
+                    // $("#reservation_dropdown").show();
+                    // console.log(event.event.extendedProps);
                 },
                 timeZone: "UTC",
                 slotMinTime: '07:00:00',
@@ -202,7 +371,10 @@
                                 title: result[i].professor_name + " - " + result[i].asignature + " - " +
                                     result[i].classroom,
                                 start: result[i].reservation_start,
-                                end: result[i].reservation_end
+                                end: result[i].reservation_end,
+                                extendedProps: {
+                                    reservation: result[i]
+                                }
                             });
                         }
                     })

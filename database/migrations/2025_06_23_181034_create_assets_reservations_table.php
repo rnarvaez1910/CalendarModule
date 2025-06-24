@@ -15,7 +15,7 @@ class CreateAssetsReservationsTable extends Migration
     {
         Schema::create('assets_reservations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('asset_id')->constrained()->onDelete('cascade');
+            $table->foreignId('assets_id')->constrained()->onDelete('cascade');
             $table->foreignId('reservation_id')->constrained()->onDelete('cascade');
         });
     }

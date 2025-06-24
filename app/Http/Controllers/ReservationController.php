@@ -14,7 +14,7 @@ class ReservationController extends Controller
      */
     public function findAll()
     {
-        $reservations = Reservation::with('assetsReservation.asset')->get();
+        $reservations = Reservation::with('assets_reservation.asset')->get();
         return response()->json($reservations);
     }
 
