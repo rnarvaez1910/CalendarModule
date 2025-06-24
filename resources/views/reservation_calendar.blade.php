@@ -396,6 +396,20 @@
                     .catch(console.log);
             })
             loadReservations();
+            // agregar los dos fetch 
+            // let total_assets;
+            // fetch("http://localhost/Backend/public/api/assets", {
+            //     method: "GET",
+            // }).then(
+            //     return response.json());
+            // .then(data => {
+            //     total_assets = data;
+            // }).catch(console.log(total_assets));
+
+            // let inventory_assets;
+            // fetch("http://localhost/Backend/public/api/assets?start=2025-06-24T10:24:00&end=2025-06-24T11:24:00", {
+            //     method: "GET",
+            // }).then
         });
     </script>
 @endsection
