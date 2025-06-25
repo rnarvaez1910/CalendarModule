@@ -2,24 +2,24 @@
 
 @section('styles')
     <!-- Sweet alert 2 -->
-    <link rel="stylesheet" href="{{ asset('plugins/sweetalert2/sweetalert2.css') }}">
+    <link rel="stylesheet" href="/Backend/public/plugins/sweetalert2/sweetalert2.css">
     <!-- Select 2 -->
-    <link rel="stylesheet" href="{{ asset('plugins/select2/css/select2.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/portalunimar/other/select2-boostrap.css') }}">
+    <link rel="stylesheet" href="/Backend/public/plugins/select2/css/select2.css">
+    <link rel="stylesheet" href="/Backend/public/css/portalunimar/other/select2-boostrap.css">
 @endsection
 
 @section('scripts')
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales/es.global.min.js"></script>
     <!-- Sweet alert 2 -->
-    <script src="{{ asset('plugins/sweetalert2/sweetalert2.js') }}"></script>
+    <script src="/Backend/public/plugins/sweetalert2/sweetalert2.js"></script>
     <!-- Select 2 -->
-    <script src="{{ asset('plugins/select2/js/select2.js') }}" defer></script>
+    <script src="/Backend/public/plugins/select2/js/select2.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
-    <link rel="stylesheet" href="{{ asset('css/portalunimar/admin/reservation_calendar.css') }}">
+    <link rel="stylesheet" href="/Backend/public/css/portalunimar/admin/reservation_calendar.css">
 @endsection
 
 @section('admincontent')
-    {{-- <div id="reservation_dropdown" class="p-2 border bg-white position-fixed rounded">
+    <div id="reservation_dropdown" class="p-2 border bg-white position-fixed rounded" style="display: none;">
         <div id="reservation_name">
             Profesor - Fecha
         </div>
@@ -36,28 +36,8 @@
             Fecha
         </div>
         <div id="reservation_assets">
-            <div>
-                <label>Video Beam</label>
-                <input id="video_beam_asset_ro" type="checkbox" onclick="return false">
-            </div>
-            <div>
-                <label>Cable HDMI</label>
-                <input id="cable_asset_ro" type="checkbox" onclick="return false">
-            </div>
-            <div>
-                <label>Laptop</label>
-                <input id="laptop_asset_ro" type="checkbox" onclick="return false">
-            </div>
-            <div>
-                <label>Extension Electrica</label>
-                <input id="extension_asset_ro" type="checkbox" onclick="return false">
-            </div>
-            <div>
-                <label>Adaptador</label>
-                <input id="adapter_asset_ro" type="checkbox" onclick="return false">
-            </div>
         </div>
-    </div> --}}
+    </div>
     {{-- Formulario de reserva --}}
     <form class="d-flex flex-column gap-2" id="reservation_form">
         <div>
@@ -333,13 +313,16 @@
                     $("#electrical_extension").val(event.event.extendedProps.reservation
                         .electrical_extension);
                     $("#adapter").val(event.event.extendedProps.reservation.adapter);
-                    // let dimesions = event.el.getBoundingClientRect()
-                    // $("#reservation_dropdown").css({
-                    //     top: dimesions.top,
-                    //     left: dimesions.left + dimesions.width,
-                    //     zIndex: 100
-                    // })
-                    // $("#reservation_dropdown").show();
+
+                    const dimesions = event.el.getBoundingClientRect();
+
+                    $("#reservation_dropdown").css({
+                        top: dimesions.top,
+                        left: dimesions.left + dimesions.width,
+                        zIndex: 100
+                    });
+
+                    $("#reservation_dropdown").show();
                     // console.log(event.event.extendedProps);
                 },
                 timeZone: "UTC",
@@ -359,7 +342,7 @@
 
             function loadReservations(r = 0) {
                 calendar.removeAllEvents();
-                fetch("http://localhost/Backend/public/api/reservation").then(function(result) {
+                fetch("/Backend/public/api/reservation").then(function(result) {
                         return result.json();
                     })
                     .then(function(result) {
@@ -382,10 +365,15 @@
                         }
                     });
             }
+
+            $(document).click(function() {
+                // $("#reservation_dropdown").hide();
+            });
+
             $('#reservation_form').on("submit", function(event) {
                 event.preventDefault();
                 console.log(reservation);
-                fetch("http://localhost/Backend/public/api/reservation", {
+                fetch("/Backend/public/api/reservation", {
                         method: "POST",
                         body: JSON.stringify(reservation),
                         headers: {
@@ -396,20 +384,21 @@
                     .catch(console.log);
             })
             loadReservations();
-            // agregar los dos fetch 
-            // let total_assets;
-            // fetch("http://localhost/Backend/public/api/assets", {
-            //     method: "GET",
-            // }).then(
-            //     return response.json());
-            // .then(data => {
-            //     total_assets = data;
-            // }).catch(console.log(total_assets));
 
-            // let inventory_assets;
-            // fetch("http://localhost/Backend/public/api/assets?start=2025-06-24T10:24:00&end=2025-06-24T11:24:00", {
-            //     method: "GET",
-            // }).then
+            if (reservation.reservation_start && reservation
+                .reservation_end) { // se valida si las fechas no vienen vacias
+
+                let availableAssets;
+                fetch(`/Backend/public/api/assets?start=&end=`, {
+                        method: "GET",
+                    })
+                    .then(function(response) {
+                        return response.json();
+                    })
+                    .then(function(result) {
+                        availableAssets = result;
+                    });
+            }
         });
     </script>
 @endsection
