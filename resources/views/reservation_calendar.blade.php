@@ -405,8 +405,8 @@
                     // cargar data al dropdown
                     const professorName = event.event.extendedProps.reservation
                         .professor_name;
-                    const reservationDate = event.event.extendedProps.reservation
-                        .reservation_start
+                    const reservationDate = new Date(event.event.extendedProps.reservation
+                        .reservation_start).toLocaleString("es-ES")
                     const reservationCombined = `${professorName} - ${reservationDate}`;
                     $("#reservation_name").text(reservationCombined);
                     $("#reservation_professor").text(event.event.extendedProps.reservation
@@ -417,9 +417,9 @@
                         .classroom);
                     $("#reservation_date_start").text(new Date(event.event.extendedProps.reservation
                         .reservation_start).toLocaleString(
-                    "es-ES")); // usar esto para mejorar el formato de fecha
-                    $("#reservation_date_end").text(event.event.extendedProps.reservation
-                        .reservation_end);
+                        "es-ES")); // usar esto para mejorar el formato de fecha
+                    $("#reservation_date_end").text(new Date(event.event.extendedProps.reservation
+                        .reservation_end).toLocaleString("es-ES"));
 
                     $("#reservation_form").hide();
                     $("#reservation_info").show();
