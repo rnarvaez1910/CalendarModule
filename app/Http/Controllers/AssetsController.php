@@ -16,46 +16,53 @@ class AssetsController extends Controller
      */
     public function findAllAssets(Request $request)
     {
-        $start = $request->query('start');
-        $end = $request->query('end');
+        try { 
+            // $start = $request->query('start');
+            // $end = $request->query('end');
+    
+            $assets = Assets::get();
+    
+            // $occupied_assets = Assets::with([
+            //         'assets_reservation' => function($query) use($start, $end) { 
+            //             $query->whereHas('reservation', function($query) use ($start, $end) { 
+            //                 $query->whereBetween('reservation_start', [$start, $end])
+            //                     ->whereBetween('reservation_end', [$start, $end]);
+            //             });
+            //         },
+            //         'assets_reservation.reservation'
+            //     ])
+            //     ->whereHas('assets_reservation.reservation', function (Builder $query) use($start, $end) {
+            //         $query->whereBetween('reservation_start', [$start, $end])
+            //             ->whereBetween('reservation_end', [$start, $end]);
+            //     })
+            //     ->get();
+    
+            // $free_assets = Assets::with([
+            //         'assets_reservation' => function($query) use($start, $end) { 
+            //             $query->whereHas('reservation', function($query) use ($start, $end) { 
+            //                 $query->whereBetween('reservation_start', [$start, $end])
+            //                     ->whereBetween('reservation_end', [$start, $end]);
+            //             });
+            //         },
+            //         'assets_reservation.reservation'
+            //     ])
+            //     ->whereHas('assets_reservation.reservation', function (Builder $query) use($start, $end) {
+            //         $query->whereBetween('reservation_start', [$start, $end])
+            //             ->whereBetween('reservation_end', [$start, $end]);
+            //     })
+            //     ->whereNotIn('id', $occupied_assets->map(function($asset) { 
+            //         return $asset->id;
+            //     }))
+            //     ->orWhereDoesntHave('assets_reservation.reservation')
+            //     ->get();
+    
+            // $assets = $occupied_assets->concat($free_assets);
+    
+            return response()->json($assets);
 
-        $occupied_assets = Assets::with([
-                'assets_reservation' => function($query) use($start, $end) { 
-                    $query->whereHas('reservation', function($query) use ($start, $end) { 
-                        $query->whereBetween('reservation_start', [$start, $end])
-                            ->whereBetween('reservation_end', [$start, $end]);
-                    });
-                },
-                'assets_reservation.reservation'
-            ])
-            ->whereHas('assets_reservation.reservation', function (Builder $query) use($start, $end) {
-                $query->whereBetween('reservation_start', [$start, $end])
-                    ->whereBetween('reservation_end', [$start, $end]);
-            })
-            ->get();
-
-        $free_assets = Assets::with([
-                'assets_reservation' => function($query) use($start, $end) { 
-                    $query->whereHas('reservation', function($query) use ($start, $end) { 
-                        $query->whereBetween('reservation_start', [$start, $end])
-                            ->whereBetween('reservation_end', [$start, $end]);
-                    });
-                },
-                'assets_reservation.reservation'
-            ])
-            ->whereHas('assets_reservation.reservation', function (Builder $query) use($start, $end) {
-                $query->whereBetween('reservation_start', [$start, $end])
-                    ->whereBetween('reservation_end', [$start, $end]);
-            })
-            ->whereNotIn('id', $occupied_assets->map(function($asset) { 
-                return $asset->id;
-            }))
-            ->orWhereDoesntHave('assets_reservation.reservation')
-            ->get();
-
-        $assets = $occupied_assets->concat($free_assets);
-
-        return response()->json($assets);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**

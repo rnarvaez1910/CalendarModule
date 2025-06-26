@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Reservation;
+use App\AssetsReservation;
 use Illuminate\Http\Request;
 
 class ReservationController extends Controller
@@ -14,7 +15,7 @@ class ReservationController extends Controller
      */
     public function findAll()
     {
-        $reservations = Reservation::with('assets_reservation.asset')->get();
+        $reservations = Reservation::with('assets_reservation.assets')->get();
         return response()->json($reservations);
     }
 
@@ -32,8 +33,17 @@ class ReservationController extends Controller
             'classroom' => 'required|string',
             'reservation_start' => 'required|date', 
             'reservation_end' => 'required|date',
+            'assets_reservation' => 'array',
             ]);
         $reservation = Reservation::create($reservationInfo);
+
+        foreach ($reservationInfo['assets_reservation'] as $assetId) {
+            AssetsReservation::create([
+                'reservation_id' => $reservation->id,
+                'assets_id' => $assetId
+            ]);
+        }
+
         return response()->json($reservation, 201);
     } 
 
@@ -55,8 +65,14 @@ class ReservationController extends Controller
      * @param  \App\Reservation  $reservation
      * @return \Illuminate\Http\Response
      */
-    public function delete(Reservation $reservation)
+    public function delete($id)
     {
-        //
+        Reservation::destroy($id);
+        return response()->noContent();
+    }
+
+    public function report() { 
+        $reservations = Reservation::with('assets_reservation.assets')->get();
+        return view('reservation_report', compact('reservations'));
     }
 }

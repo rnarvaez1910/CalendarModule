@@ -9,6 +9,8 @@ class Assets extends Model
 {
     protected $appends = ['can_reserve'];
 
+    public $timestamps = false;
+
     public function assets_reservation()
     {
         return $this->hasMany(AssetsReservation::class);

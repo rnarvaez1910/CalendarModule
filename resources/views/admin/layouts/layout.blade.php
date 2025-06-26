@@ -76,8 +76,10 @@
         <!-- /.footer -->
 
         <!-- Page Scripts -->
-        @yield('scripts')
     </div>
+
+    @yield('tumama')
+    @yield('scripts')
 </body>
 
 </html>
