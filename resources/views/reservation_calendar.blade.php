@@ -454,7 +454,7 @@
                     },
                     initialView: 'dayGridMonth',
                     headerToolbar: {
-                        left: 'prev next prueba',
+                        left: 'prev next reservationCreate report',
                         center: 'title',
                         right: 'dayGridMonth timeGridWeek timeGridDay'
                     },
@@ -541,12 +541,18 @@
                         hour12: true
                     },
                     customButtons: {
-                        prueba: {
+                        reservationCreate: {
                             text: "Crear reserva",
                             click: function(event) {
                                 $("#reservation_form").css('display', 'flex');;
                                 $("#reservation_info").hide();
                                 setDropdownVisibility(event.target, true)
+                            }
+                        },
+                        report: {
+                            text: "Generar reporte",
+                            click: function(event) {
+                                window.open('/Backend/public/api/reservation/report', '_blank');
                             }
                         }
                     },
@@ -556,7 +562,14 @@
                         const today = moment(new Date().toISOString()).utc();
                         const eventEnd = event.event.end || event.event.start;
                         if (moment().utc().isAfter(eventEnd)) event.el.classList.add("past-event");
+
+                        if (event.view.type === 'timeGridWeek') $(".fc-report-button").show();
+                        else $(".fc-report-button").hide();
                     },
+                    datesSet: function(event) {
+                        if (event.view.type === 'timeGridWeek') $(".fc-report-button").show();
+                        else $(".fc-report-button").hide();
+                    }
                 });
             calendar.render();
 
