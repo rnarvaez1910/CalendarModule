@@ -1,37 +1,45 @@
 <?php
-require_once __DIR__ . '/../vendor/autoload.php';
+//Import PHPMailer classes into the global namespace
+//These must be at the top of your script, not inside a function
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
+
+//Load Composer's autoloader (created by composer, not included with PHPMailer)
+require './../vendor/autoload.php';
+
+//Create an instance; passing `true` enables exceptions
+$mail = new PHPMailer(true);
+
 try {
-    // Create the SMTP Transport 
-    $transport = (new Swift_SmtpTransport('smtp.gmail.com', 465))
-        ->setUsername('rnarvaez.5304@unimar.edu.ve')
-        ->setPassword('27125304');
-    // Create the Mailer using your created Transport 
-    $mailer = new Swift_Mailer($transport);
-    // Create a message 
-    $message = new Swift_Message();
-    // Set a "subject" 
-    $message->setSubject('Demo message using the SwiftMailer library.');
-    // Set the "From address" 
-    $message->setFrom(['rnarvaez.5304@unimar.edu.ve' => 'yo']);
-    // Set the "To address" [Use setTo method for multiple recipients, argument should be array] 
-    $message->addTo('raymondnarvaez19@gmail.com','recipient name');
-    // Add "CC" address [Use setCc method for multiple recipients, argument should be array] 
-    // $message->addCc('recipient@gmail.com', 'recipient name');
-    // // Add "BCC" address [Use setBcc method for multiple recipients, argument should be array] 
-    // $message->addBcc('recipient@gmail.com', 'recipient name');
-    // // Add an "Attachment" (Also, the dynamic data can be attached) 
-    // $attachment = Swift_Attachment::fromPath('example.xls');
-    // $attachment->setFilename('report.xls');
-    // $message->attach($attachment);
-    // Add inline "Image" 
-    // $inline_attachment = Swift_Image::fromPath('nature.jpg');
-    // $cid = $message->embed($inline_attachment);
-    // Set the plain-text "Body" 
-    $message->setBody("This is the plain text body of the message.\nThanks,\nAdmin");
-    // Set a "Body" 
-    $message->addPart('This is the HTML version of the message.<br>Example of inline image:<br><img src="'.$cid.'" width="200" height="200"><br>Thanks,<br>Admin', 'text/html');
-    // Send the message 
-    $result = $mailer->send($message);
+    //Server settings                     //Enable verbose debug output
+    $mail->isSMTP();                                            //Send using SMTP
+    $mail->Host       = 'smtp.gmail.com';                     //Set the SMTP server to send through
+    $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
+    $mail->Username   = 'rnarvaez.5304@unimar.edu.ve';                     //SMTP username
+    $mail->Password   = 'zivhihopqeakubhk';                               //SMTP password
+    $mail->SMTPSecure = 'ssl';            //Enable implicit TLS encryption
+    $mail->Port       = 465;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+    //Recipients
+    $mail->setFrom('rnarvaez.5304@unimar.edu.ve', 'Yo pero de universidad');
+    $mail->addAddress('raymondnarvaez19@gmail.com', 'Yo');     //Add a recipient
+    //$mail->addAddress('ellen@example.com');               //Name is optional
+    //$mail->addReplyTo('info@example.com', 'Information');
+    //$mail->addCC('cc@example.com');
+    //$mail->addBCC('bcc@example.com');
+
+    //Attachments
+    //$mail->addAttachment('/var/tmp/file.tar.gz');         //Add attachments
+    //$mail->addAttachment('/tmp/image.jpg', 'new.jpg');    //Optional name
+
+    //Content
+    $mail->isHTML(true);                                  //Set email format to HTML
+    $mail->Subject = 'Here is the subject';
+    $mail->Body    = 'This is the HTML message body <b>in bold!</b>';
+    $mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
+
+    $mail->send();
+    echo 'Message has been sent';
 } catch (Exception $e) {
-  echo $e->getMessage();
+    echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
 }
