@@ -14,10 +14,40 @@
             cursor: pointer;
         }
 
-        .past-event,
-        .past-event * {
+        .fc-daygrid-dot-event.past-event,
+        .fc-daygrid-dot-event.past-event * {
             color: #001E64;
             border-color: #001E64;
+        }
+
+        .fc-daygrid-dot-event.approved,
+        .fc-daygrid-dot-event.approved * {
+            color: #28a745;
+            border-color: #28a745;
+        }
+
+        .fc-daygrid-dot-event.past-event.approved,
+        .fc-daygrid-dot-event.past-event.approved * {
+            color: #115321;
+            border-color: #115321;
+        }
+
+        .fc-daygrid-block-event.past-event,
+        .fc-daygrid-block-event.past-event * {
+            border-color: #001E64;
+            background-color: #001E64;
+        }
+
+        .fc-daygrid-block-event.approved,
+        .fc-daygrid-block-event.approved * {
+            border-color: #28a745;
+            background-color: #28a745;
+        }
+
+        .fc-daygrid-block-event.past-event.approved,
+        .fc-daygrid-block-event.past-event.approved * {
+            border-color: #115321;
+            background-color: #115321;
         }
 
         #reservation_info table td {
@@ -29,6 +59,23 @@
 
         #reservation_info table tr:not(:last-child) {
             border-bottom: 1px solid #1f2d3d;
+        }
+
+        .animate-spin {
+            animation-name: spin;
+            animation-duration: 2000ms;
+            animation-iteration-count: infinite;
+            animation-timing-function: linear;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
         }
     </style>
 @endsection
@@ -45,7 +92,16 @@
 @endsection
 
 @section('admincontent')
-    <button type="button" onclick="window.open('/Backend/public/api/reservation/report', '_blank');"></button>
+    <div id="loader" class="position-fixed w-100 h-100" style="top: 0; left: 0; z-index: 9998; display: none;">
+        <div class="position-fixed w-100 h-100 bg-black" style="top: 0; left: 0; opacity: 0.5;">
+        </div>
+        <div class="position-fixed text-white w-100 h-100 d-flex flex-column justify-content-center align-items-center"
+            style="top: 0; left: 0;">
+            <div class="d-flex justify-content-center align-items-center position-relative">
+                <i class="fa-solid fa-circle-notch fa-3x animate-spin"></i>
+            </div>
+        </div>
+    </div>
     <div id="reservation_dropdown" class="p-2 border bg-white position-fixed rounded overflow-y-auto"
         style="display: none;">
         <div id="reservation_info" style="display: none;" class="flex-column gap-1">
@@ -90,7 +146,7 @@
                 {{-- aqui va el resultado de las iteraciones --}}
             </div>
             <div class="d-flex gap-2 align-items-center justify-content-center">
-                <button type="button" class="btn btn-outline-success">
+                <button type="button" class="btn btn-outline-success" id="approve_reservation">
                     Aprobar reserva
                 </button>
                 <button type="button" class="btn btn-outline-primary" id="edit_reservation">
@@ -287,7 +343,7 @@
             <div class="d-flex gap-2">
                 <button type="button" class="btn btn-outline-danger close-dropdown">Cancelar</button>
                 <span class="flex-grow-1 flex-shrink-1"></span>
-                <button class="btn btn-outline-primary">Enviar</button>
+                <button class="btn btn-outline-primary">Guardar</button>
             </div>
         </form>
     </div>
@@ -330,6 +386,8 @@
                     $("#professor_email").val("");
                     $("#classroom").val("");
                     $("#asignature").val("");
+
+                    $("#assets input").prop("checked", false);
 
                     reservation = {
                         ...DEFAULT_VALUES
@@ -375,44 +433,25 @@
             });
 
             $(document).on("input", ".asset-input", function(event) {
-                const assetId = event.target.id;
+                const assetId = event.target.id.toString().replace("input_asset_input_", "");
                 if (event.target.checked) {
-                    reservation.assets_reservation = reservation.assets || [];
-                    reservation.assets_reservation.push(assetId);
+                    reservation.assets_reservation = reservation.assets_reservation ?? [];
+                    if (!reservation.assets_reservation.some((id) =>
+                            id.toString() === assetId.toString()))
+                        reservation.assets_reservation.push(assetId);
                 } else {
                     reservation.assets_reservation = reservation.assets_reservation.filter((id) =>
-                        id !== assetId);
+                        id.toString() !== assetId.toString());
                 }
-
-                console.log(reservation)
             });
 
-            function availableAssets() {
-                if (reservation.reservation_start && reservation
-                    .reservation_end) { // se valida si las fechas no vienen vacias
-
-                    fetch(`/Backend/public/api/assets?start=${reservation.reservation_start}:00&end=${reservation.reservation_end}:00`, {
-                            method: "GET",
-                        })
-                        .then(function(response) {
-                            return response.json();
-                        })
-                        .then(function(result) {
-                            $("#assets").empty(); // Limpiar los assets previos
-                            for (let i = 0; i < result.length; i++) {
-                                $("#assets").append(
-                                    `<div class='form-check d-flex align-items-center gap-2 p-0 m-0'><input type='checkbox' class='form-check-input asset-input m-0 float-none position-relative' id='${result[i].id}' ${!result[i].can_reserve ? 'onclick="return false"' : ''}></input><label for='${result[i].id}' class='form-check-label'>${result[i].name}</label></div>`
-                                );
-                            }
-
-                        });
-                }
+            function createAssetInput(reservation, idPrefix, className, readonly = false) {
+                return `<div class='form-check d-flex align-items-center gap-2 p-0 m-0' id='${idPrefix + reservation.id}'><input type='checkbox' class='form-check-input ${className} m-0 float-none position-relative' ${readonly ? 'onclick="return false"' : ''} id='${idPrefix + "input_" + reservation.id}' disabled></input><label for='${idPrefix + "input_" + reservation.id}' class='form-check-label'>${reservation.name}</label><i class="fa-solid fa-circle-notch animate-spin" style='display:none;'></i></div>`;
             }
 
             function hideDropdownOnClickOutside(event) {
                 if (!event.target.closest("#reservation_dropdown"))
                     setDropdownVisibility(null, false);
-
             }
 
             $('#professor_name').on("input", function(event) {
@@ -433,12 +472,18 @@
 
             $('#reservation_start').on("input", function(event) {
                 reservation.reservation_start = event.target.value
-                availableAssets();
+                verifyAssets(
+                    reservation.reservation_start,
+                    reservation.reservation_end
+                );
             });
 
             $('#reservation_end').on("input", function(event) {
                 reservation.reservation_end = event.target.value
-                availableAssets();
+                verifyAssets(
+                    reservation.reservation_start,
+                    reservation.reservation_end
+                );
             });
 
             let calendarEl = document.getElementById('calendar');
@@ -493,9 +538,19 @@
                             ...event.event.extendedProps.reservation,
                             assets_reservation: event.event.extendedProps.reservation.assets_reservation
                                 .map(function(asset) {
-                                    return asset.id;
+                                    return asset.assets_id;
                                 })
                         };
+
+                        verifyAssets(reservation.reservation_start,
+                            reservation.reservation_end).then(function() {
+
+                            reservation.assets_reservation?.forEach(function(assetId) {
+                                $(`#input_asset_${assetId} input`).prop("checked", true);
+                                $(`#input_asset_${assetId} input`).prop("disabled", false);
+                            });
+                        });
+
 
                         $("#reservation_name").text(reservationCombined);
                         $("#reservation_professor").text(event.event.extendedProps.reservation
@@ -512,13 +567,6 @@
                         $("#reservation_date_end").text(moment(event.event.extendedProps
                             .reservation
                             .reservation_end).utc().format('DD/MM/YYYY HH:mm'));
-
-                        console.log(reservation);
-                        console.log(assets);
-                        assets.forEach(function(asset) {
-                            $("#" + asset.id).prop("checked", reservation.assets_reservation
-                                .includes(asset.id));
-                        });
 
                         $("#reservation_form").hide();
                         $("#reservation_info").css('display', 'flex');;
@@ -552,7 +600,9 @@
                         report: {
                             text: "Generar reporte",
                             click: function(event) {
-                                window.open('/Backend/public/api/reservation/report', '_blank');
+                                window.open(
+                                    `/Backend/public/api/reservation/report?start=${moment(calendar.view.activeStart).utc().format("YYYY/MM/DDTHH:mm:ss")}&end=${moment(calendar.view.activeEnd).utc().format("YYYY/MM/DDTHH:mm:ss")}`,
+                                    '_blank');
                             }
                         }
                     },
@@ -561,12 +611,17 @@
                     eventDidMount: function(event) {
                         const today = moment(new Date().toISOString()).utc();
                         const eventEnd = event.event.end || event.event.start;
-                        if (moment().utc().isAfter(eventEnd)) event.el.classList.add("past-event");
+                        if (moment().utc().isAfter(eventEnd))
+                            event.el.classList.add("past-event");
+
+                        if (event.event.extendedProps.reservation?.approved) event.el.classList
+                            .add("approved");
 
                         if (event.view.type === 'timeGridWeek') $(".fc-report-button").show();
                         else $(".fc-report-button").hide();
                     },
                     datesSet: function(event) {
+                        loadReservations(event.start, event.end);
                         if (event.view.type === 'timeGridWeek') $(".fc-report-button").show();
                         else $(".fc-report-button").hide();
                     }
@@ -581,11 +636,17 @@
 
             ro.observe(navbar);
 
-            function loadReservations(r = 0) {
+            function loadReservations(start, end, r = 0) {
                 calendar.removeAllEvents();
-                fetch("/Backend/public/api/reservation").then(function(result) {
-                        return result.json();
-                    })
+                $("#loader").fadeIn(150);
+                fetch(
+                        `/Backend/public/api/reservation?start=${moment(start).utc().format("YYYY/MM/DDTHH:mm:ss")}&end=${moment(end).utc().format("YYYY/MM/DDTHH:mm:ss")}`
+                    )
+                    .then(
+                        function(result) {
+                            $("#loader").fadeOut(150);
+                            return result.json();
+                        })
                     .then(function(result) {
                         for (let i = 0; i < result.length; i++) {
                             calendar.addEvent({
@@ -603,29 +664,128 @@
                         }
                     })
                     .catch(function() {
-                        if (r < 3) loadReservations(r + 1);
+                        if (r < 3) loadReservations(start, end, r + 1);
+                        else $("#loader").fadeOut(150);
                     });
             }
 
-            function loadAssets() {
-                fetch("/Backend/public/api/assets").then(function(result) {
+            function loadAssets(r = 0) {
+                $("#loader").fadeIn(150);
+                fetch("/Backend/public/api/assets")
+                    .then(function(result) {
                         return result.json();
                     })
                     .then(function(result) {
                         assets = result;
                         $("#assets").empty(); // Limpiar los assets previos
                         for (let i = 0; i < result.length; i++) {
-                            $("#assets").append(
-                                `<div class='form-check d-flex align-items-center gap-2 p-0 m-0'><input type='checkbox' class='form-check-input asset-input m-0 float-none position-relative' id='${result[i].id}' ${!result[i].can_reserve ? 'onclick="return false"' : ''}></input><label for='${result[i].id}' class='form-check-label'>${result[i].name}</label></div>`
-                            );
+                            $("#assets").append(createAssetInput(result[i], "input_asset_", "asset-input"));
+                        }
+                    }).catch(function() {
+                        if (r < 3) loadAssets(r + 1);
+                        else $("#loader").fadeOut(150);
+                    });
+            }
+
+            async function verifyAsset(id, start, end, r = 0) {
+                $(`#input_asset_${id} .fa-solid`).fadeIn(150);
+                $(`#input_asset_${id} input`).prop("disabled", true);
+
+                return fetch(`/Backend/public/api/assets/verify/${id}?start=${start}:00&end=${end}:00`, {
+                        method: "GET",
+                    })
+                    .then(function(response) {
+                        return response.json();
+                    })
+                    .then(function(result) {
+                        $(`#input_asset_${id} .fa-solid`).fadeOut(150);
+                        $(`#input_asset_${id} input`).prop("disabled", !result.asset.can_reserve);
+                        if (!result.asset.can_reserve)
+                            $(`#input_asset_${id} input`).prop("checked", false);
+                    })
+                    .catch(function() {
+                        if (r < 3) verifyAsset(id, start, end, r + 1);
+                        else {
+                            $(`#input_asset_${id} .fa-solid`).fadeOut(150);
+                            $("#loader").fadeOut(150);
                         }
                     });
             }
 
+            async function verifyAssets(start, end) {
+                if (!start || !end) return;
+
+                $("#loader").fadeIn(150);
+                $("#reservation_start").blur();
+                $("#reservation_end").blur();
+
+                if (moment(start).isAfter(moment(end))) {
+                    $("#loader").fadeOut(150);
+                    Swal.fire({
+                        "title": "Error",
+                        "text": "La fecha de inicio no puede ser posterior a la fecha de fin.",
+                        "icon": "error",
+                        "confirmButtonText": "Aceptar",
+                    });
+                    return;
+                }
+
+                const result = [];
+                for (const element of assets) {
+
+                    result.push(verifyAsset(element.id, start, end));
+                }
+
+                return Promise.all(result).then(function() {
+                    $("#loader").fadeOut(150);
+                }).catch(function() {
+                    $("#loader").fadeOut(150);
+                });
+            }
+
             $("#edit_reservation").click(function() {
                 $("#reservation_info").hide();
-                $("#reservation_form").css('display', 'flex');;
+                $("#reservation_form").css('display', 'flex');
+                verifyAssets(
+                    reservation.reservation_start,
+                    reservation.reservation_end
+                );
                 updateDropdownPosition();
+            });
+
+            $("#approve_reservation").click(function() {
+                Swal.fire({
+                        "title": "¿Desea continuar?",
+                        "text": "Esta acción aprobará la reserva y notificará al profesor.",
+                        "icon": "warning",
+                        "showCancelButton": true,
+                        "confirmButtonText": "Sí, aprobar",
+                        "confirmButtonColor": "#28a745",
+                        "cancelButtonText": "Cancelar",
+                    }).then(function(result) {
+                        if (result.isConfirmed) {
+                            $("#loader").fadeIn(150);
+                            return fetch("/Backend/public/api/reservation/verify/" +
+                                reservation.id, {
+                                    method: "POST",
+                                });
+                        }
+                    }).then(function(result) {
+                        if (!result) return;
+
+                        setDropdownVisibility(null, false);
+                        loadReservations(calendar.view.activeStart, calendar.view.activeEnd);
+                    })
+                    .catch(function() {
+                        $("#loader").fadeOut(150);
+                        Swal.fire({
+                            "title": "Error",
+                            "text": "No se pudo aprobar la reserva.",
+                            "icon": "error",
+                            "confirmButtonText": "Aceptar",
+                        });
+                    });
+
             });
 
             $("#delete_reservation").click(function() {
@@ -638,35 +798,58 @@
                         "confirmButtonColor": "#dc3545",
                         "cancelButtonText": "Cancelar",
                     }).then(function(result) {
-                        if (result.isConfirmed) return fetch("/Backend/public/api/reservation/" +
-                            reservation.id, {
-                                method: "DELETE",
-                            });
+                        if (result.isConfirmed) {
+                            $("#loader").fadeIn(150);
+                            return fetch("/Backend/public/api/reservation/" +
+                                reservation.id, {
+                                    method: "DELETE",
+                                });
+                        }
                     }).then(function(result) {
                         if (!result) return;
 
                         setDropdownVisibility(null, false);
-                        loadReservations();
+                        loadReservations(calendar.view.activeStart, calendar.view.activeEnd);
                     })
-                    .catch(console.log);
+                    .catch(function() {
+                        $("#loader").fadeOut(150);
+                        Swal.fire({
+                            "title": "Error",
+                            "text": "No se pudo eliminar la reserva.",
+                            "icon": "error",
+                            "confirmButtonText": "Aceptar",
+                        });
+                    });
 
             });
 
             $('#reservation_form').on("submit", function(event) {
                 event.preventDefault();
-                console.log(reservation);
-                fetch("/Backend/public/api/reservation", {
-                        method: "POST",
+                const baseUrl = "/Backend/public/api/reservation";
+                $("#loader").fadeIn(150);
+                fetch(reservation.id ? `${baseUrl}/${reservation.id}` : baseUrl, {
+                        method: reservation.id ? "PUT" : "POST",
                         body: JSON.stringify(reservation),
                         headers: {
                             Accept: "application/json",
                             "Content-Type": "application/json",
                         }
-                    }).then(loadReservations)
-                    .catch(console.log);
+                    })
+                    .then(() => {
+                        setDropdownVisibility(null, false);
+                        loadReservations(calendar.view.activeStart, calendar.view.activeEnd);
+                    })
+                    .catch(function() {
+                        $("#loader").fadeOut(150);
+                        Swal.fire({
+                            "title": "Error",
+                            "text": "No se pudo guardar la reserva.",
+                            "icon": "error",
+                            "confirmButtonText": "Aceptar",
+                        });
+                    });
             })
 
-            loadReservations();
             loadAssets();
         });
     </script>

@@ -14,7 +14,9 @@ use Illuminate\Support\Facades\Route;
 */
 Route::get('/reservation', 'ReservationController@findAll');
 Route::put('/reservation/{id}', 'ReservationController@update');
+Route::post('/reservation/verify/{id}', 'ReservationController@verify');
 Route::post('/reservation', 'ReservationController@create');
 Route::delete('/reservation/{id}', 'ReservationController@delete');
 Route::get('/reservation/report', 'ReservationController@report');
 Route::get('/assets','AssetsController@findAllAssets');
+Route::get('/assets/verify/{id}','AssetsController@verifyAvailability');

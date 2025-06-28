@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Assets;
 use App\AssetsReservation;
+use App\Reservation;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -17,47 +18,7 @@ class AssetsController extends Controller
     public function findAllAssets(Request $request)
     {
         try { 
-            // $start = $request->query('start');
-            // $end = $request->query('end');
-    
-            $assets = Assets::get();
-    
-            // $occupied_assets = Assets::with([
-            //         'assets_reservation' => function($query) use($start, $end) { 
-            //             $query->whereHas('reservation', function($query) use ($start, $end) { 
-            //                 $query->whereBetween('reservation_start', [$start, $end])
-            //                     ->whereBetween('reservation_end', [$start, $end]);
-            //             });
-            //         },
-            //         'assets_reservation.reservation'
-            //     ])
-            //     ->whereHas('assets_reservation.reservation', function (Builder $query) use($start, $end) {
-            //         $query->whereBetween('reservation_start', [$start, $end])
-            //             ->whereBetween('reservation_end', [$start, $end]);
-            //     })
-            //     ->get();
-    
-            // $free_assets = Assets::with([
-            //         'assets_reservation' => function($query) use($start, $end) { 
-            //             $query->whereHas('reservation', function($query) use ($start, $end) { 
-            //                 $query->whereBetween('reservation_start', [$start, $end])
-            //                     ->whereBetween('reservation_end', [$start, $end]);
-            //             });
-            //         },
-            //         'assets_reservation.reservation'
-            //     ])
-            //     ->whereHas('assets_reservation.reservation', function (Builder $query) use($start, $end) {
-            //         $query->whereBetween('reservation_start', [$start, $end])
-            //             ->whereBetween('reservation_end', [$start, $end]);
-            //     })
-            //     ->whereNotIn('id', $occupied_assets->map(function($asset) { 
-            //         return $asset->id;
-            //     }))
-            //     ->orWhereDoesntHave('assets_reservation.reservation')
-            //     ->get();
-    
-            // $assets = $occupied_assets->concat($free_assets);
-    
+            $assets = Assets::get();    
             return response()->json($assets);
 
         } catch (\Exception $e) {
@@ -65,69 +26,43 @@ class AssetsController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
+    public function verifyAvailability($id, Request $request) { 
+        try {
+            $start = $request->query('start');
+            $end = $request->query('end');
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+            // Buscar el asset por ID con las assets_reservation filtradas por fecha
+            $asset = Assets::with(['assets_reservation' => function ($query) use ($start, $end) {
+                $query->whereHas('reservation', function ($reservationQuery) use ($start, $end) {
+                    $reservationQuery->where(function ($dateQuery) use ($start, $end) {
+                        $dateQuery->whereBetween('reservation_start', [$start, $end])
+                                  ->orWhereBetween('reservation_end', [$start, $end])
+                                  ->orWhere(function ($subQuery) use ($start, $end) {
+                                      $subQuery->where('reservation_start', '<=', $start)
+                                               ->where('reservation_end', '>=', $end);
+                                  });
+                    });
+                });
+            }, 'assets_reservation.reservation'])->find($id);
+            
+            if (!$asset) {
+                return response()->json(['error' => 'Asset not found'], 404);
+            }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Assets  $assets
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Assets $assets)
-    {
-        //
-    }
+            $reservations = $asset->assets_reservation->map(function ($assets_reservation) {
+                return $assets_reservation->reservation;
+            });
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Assets  $assets
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Assets $assets)
-    {
-        //
-    }
+            // Crear el resultado con el asset y sus reservas
+            $result = [
+                'asset' => $asset,
+                'reservations' => $reservations
+            ];
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Assets  $assets
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Assets $assets)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Assets  $assets
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Assets $assets)
-    {
-        
+            return response()->json($result);
+            
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 }

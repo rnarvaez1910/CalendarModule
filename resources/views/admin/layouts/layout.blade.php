@@ -19,15 +19,15 @@
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.6.0/bootstrap-tagsinput.min.css" />
     <!-- Google Font: Source Montserrat -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200&display=swap" rel="stylesheet" />
     <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href=/Backend/public/plugins/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
     <!-- Adminlte CSS -->
-    <link rel="stylesheet" href=/Backend/public/plugins/adminlte/dist/css/adminlte.min.css">
-    <link rel="stylesheet" href=/Backend/public/plugins/adminlte/dist/css/adminstyle.css">
+    <link rel="stylesheet" href="/Backend/public/plugins/adminlte/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="/Backend/public/plugins/adminlte/dist/css/adminstyle.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.1/dist/css/adminlte.min.css">
     <!-- Overlay Scrollbars -->
-    <link rel="stylesheet" href=/Backend/public/plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
+    <link rel="stylesheet" href="/Backend/public/plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
     <!-- Page Styles -->
     @yield('styles')
     <!-- JavaScript Bundle With Popper -->
