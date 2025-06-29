@@ -33,19 +33,25 @@
         }
 
         .fc-daygrid-block-event.past-event,
-        .fc-daygrid-block-event.past-event * {
+        .fc-daygrid-block-event.past-event *,
+        .fc-timegrid-event.past-event,
+        .fc-timegrid-event.past-event * {
             border-color: #001E64;
             background-color: #001E64;
         }
 
         .fc-daygrid-block-event.approved,
-        .fc-daygrid-block-event.approved * {
+        .fc-daygrid-block-event.approved *,
+        .fc-timegrid-event.approved,
+        .fc-timegrid-event.approved * {
             border-color: #28a745;
             background-color: #28a745;
         }
 
         .fc-daygrid-block-event.past-event.approved,
-        .fc-daygrid-block-event.past-event.approved * {
+        .fc-daygrid-block-event.past-event.approved *,
+        .fc-timegrid-event.past-event.approved,
+        .fc-timegrid-event.past-event.approved * {
             border-color: #115321;
             background-color: #115321;
         }
@@ -146,15 +152,19 @@
                 {{-- aqui va el resultado de las iteraciones --}}
             </div>
             <div class="d-flex gap-2 align-items-center justify-content-center">
-                <button type="button" class="btn btn-outline-success" id="approve_reservation">
-                    Aprobar reserva
-                </button>
+                @if ($isAdmin)
+                    <button type="button" class="btn btn-outline-success" id="approve_reservation">
+                        Aprobar reserva
+                    </button>
+                @endif
                 <button type="button" class="btn btn-outline-primary" id="edit_reservation">
                     Editar reserva
                 </button>
-                <button type="button" class="btn btn-outline-danger" id="delete_reservation">
-                    Eliminar reserva
-                </button>
+                @if ($isAdmin)
+                    <button type="button" class="btn btn-outline-danger" id="delete_reservation">
+                        Eliminar reserva
+                    </button>
+                @endif
             </div>
         </div>
         <form class="flex-column gap-2" id="reservation_form" style="display: none !important;">
@@ -350,12 +360,12 @@
     {{-- Formulario de reserva --}}
     <div id="calendar"></div>
     <script>
-        let calendar;
         $(document).ready(function() {
             $('#classroom').select2({
                 width: 'resolve'
             });
 
+            let calendar;
             let anchorElement;
             let assets = [];
 
@@ -403,23 +413,35 @@
             }
 
             function updateDropdownPosition() {
-                if (anchorElement) {
-                    const dimesions = anchorElement.getBoundingClientRect();
 
-                    $("#reservation_dropdown").css({
-                        top: $(window).outerHeight() < dimesions.top + $(
-                                "#reservation_dropdown").outerHeight() ?
-                            dimesions.top - 5 - ((dimesions.top + $(
-                                "#reservation_dropdown").outerHeight()) - $(window).outerHeight()) :
-                            dimesions.top,
-                        left: $(window).outerWidth() < dimesions.left + 5 + dimesions.width + $(
-                                "#reservation_dropdown").outerWidth() ?
-                            dimesions.left - 5 - $("#reservation_dropdown").outerWidth() : dimesions
-                            .left +
-                            dimesions
-                            .width + 5,
-                        zIndex: 100
-                    });
+                if (anchorElement) {
+
+                    if (calendar.view.type !== "timeGridDay" || $(anchorElement).hasClass(
+                            "fc-reservationCreate-button")) {
+                        const dimensions = anchorElement.getBoundingClientRect();
+                        $("#reservation_dropdown").css({
+                            top: $(window).outerHeight() < dimensions.top + $(
+                                    "#reservation_dropdown").outerHeight() ?
+                                dimensions.top - 5 - ((dimensions.top + $(
+                                    "#reservation_dropdown").outerHeight()) - $(window).outerHeight()) :
+                                dimensions.top,
+                            left: $(window).outerWidth() < dimensions.left + 5 + dimensions.width + $(
+                                    "#reservation_dropdown").outerWidth() ?
+                                dimensions.left - 5 - $("#reservation_dropdown").outerWidth() : dimensions
+                                .left +
+                                dimensions
+                                .width + 5,
+                            zIndex: 100
+                        });
+                    } else {
+                        const dimensions = $(anchorElement).find(".fc-event-title")?.[0]?.getBoundingClientRect?.();
+
+                        $("#reservation_dropdown").css({
+                            top: dimensions.top + dimensions.height,
+                            left: dimensions.left,
+                            zIndex: 100
+                        });
+                    }
                 }
             }
 
@@ -450,7 +472,8 @@
             }
 
             function hideDropdownOnClickOutside(event) {
-                if (!event.target.closest("#reservation_dropdown"))
+                if (!event.target.closest("#reservation_dropdown") && !$("#loader").is(":visible") && !Swal
+                    .isVisible())
                     setDropdownVisibility(null, false);
             }
 
@@ -470,7 +493,7 @@
                 reservation.asignature = event.target.value
             });
 
-            $('#reservation_start').on("input", function(event) {
+            $('#reservation_start').on("change", function(event) {
                 reservation.reservation_start = event.target.value
                 verifyAssets(
                     reservation.reservation_start,
@@ -478,7 +501,7 @@
                 );
             });
 
-            $('#reservation_end').on("input", function(event) {
+            $('#reservation_end').on("change", function(event) {
                 reservation.reservation_end = event.target.value
                 verifyAssets(
                     reservation.reservation_start,
@@ -541,6 +564,9 @@
                                     return asset.assets_id;
                                 })
                         };
+
+                        const isAdmin = @json($isAdmin);
+                        $("#edit_reservation")?.prop("disabled", !isAdmin && reservation.approved)
 
                         verifyAssets(reservation.reservation_start,
                             reservation.reservation_end).then(function() {
@@ -711,13 +737,11 @@
                         }
                     });
             }
-
+            // Validaciones de assets y de horas
             async function verifyAssets(start, end) {
                 if (!start || !end) return;
 
                 $("#loader").fadeIn(150);
-                $("#reservation_start").blur();
-                $("#reservation_end").blur();
 
                 if (moment(start).isAfter(moment(end))) {
                     $("#loader").fadeOut(150);
@@ -732,7 +756,6 @@
 
                 const result = [];
                 for (const element of assets) {
-
                     result.push(verifyAsset(element.id, start, end));
                 }
 

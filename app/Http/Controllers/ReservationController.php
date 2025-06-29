@@ -71,7 +71,8 @@ class ReservationController extends Controller
             $mail->Port = 465; 
             
             $mail->setFrom('rnarvaez.5304@unimar.edu.ve', 'Raymond UNIMAR');
-            $mail->addAddress('raymondnarvaez19@gmail.com', 'Yo');
+            // $mail->addAddress('raymondnarvaez19@gmail.com', 'Yo')
+            $mail->addAddress($reservation->professor_email);
             $mail->isHTML(true);
             $mail->Subject = 'Información sobre su reserva de insumos';
             $chainNames = "";
@@ -80,25 +81,6 @@ class ReservationController extends Controller
             }
             $chainNames = rtrim($chainNames, ', ');
             $mail->Body = 'Su reserva de ' . $chainNames . ', para el día ' . $reservation->reservation_start->format('Y-m-d H:i:s') . ', ha sido aprobada.';
-       
-                // $arreglo = [
-                //     [
-                //         "cadena" => "Su reserva de ",
-                //     ],
-                //     [
-                //         "cadena" => ", para el día; ",
-                //     ],
-                //     [
-                //         "cadena" => ", ha sido aprobada",
-                //     ]
-                //     ];
-    
-                // $cadena = "";
-                // for ($i = 0; $i < count($arreglo); $i++) { 
-                //     $cadena .= $arreglo[$i]['cadena'];
-                // }
-    
-                // $mail->Body = $cadena;
             $mail->send();
             return response()->json(['message' => 'Reservation verified and email sent successfully.'], 200);
         } catch (\Exception $e) {
@@ -175,8 +157,11 @@ class ReservationController extends Controller
             $end = $request->query('end');
 
             $reservations = Reservation::with('assets_reservation.assets')
-                ->whereBetween('reservation_start', [$start, $end])
-                ->orWhereBetween('reservation_end', [$start, $end])
+                ->where(function ($query) use($start, $end) { 
+                    $query->whereBetween('reservation_start', [$start, $end])
+                    ->orWhereBetween('reservation_end', [$start, $end]);
+                })
+                ->where('approved', true)
                 ->get();
             return view('reservation_report', compact('reservations'));
         } catch (\Exception $e) {
