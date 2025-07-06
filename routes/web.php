@@ -12,9 +12,14 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
+Route::get('/login', function () {
+    $isAdmin = false;
+    return view('login', compact('isAdmin'));
+});
+
 Route::get('/', function () {
     $isAdmin = false;
-    return view('reservation_calendar', compact('isAdmin'));
+    return view('login', compact('isAdmin'));
 });
 
 Route::get('/becario', function () {

@@ -118,7 +118,7 @@
                         </li>
                         <!-- Logout -->
                         <li class="nav-item">
-                            <a href="https://portalunimar.unimar.edu.ve/home" class="nav-link" id="btn-nav">
+                            <a href="/Backend/public/login" class="nav-link" id="btn-nav">
                                 <i class="fas fa-circle-notch nav-icon grape"></i>
                                 <p>Cerrar Sesión</p>
                             </a>

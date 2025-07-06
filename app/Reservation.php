@@ -14,7 +14,8 @@ class Reservation extends Model
         'classroom',
         'reservation_start', 
         'reservation_end', 
-        'approved'];
+        'approved',
+        'declined'];
     protected $table = 'reservations';
     protected $casts = ['id' => 'integer', 
         'professor_name' => 'string', 
@@ -23,9 +24,11 @@ class Reservation extends Model
         'classroom' => 'string',
         'reservation_start' => 'datetime', 
         'reservation_end' => 'datetime', 
-        'approved' => 'boolean'];
+        'approved' => 'boolean',
+        'declined' => 'boolean'];
     protected $attributes = [
         'approved'=> false,
+        'declined'=> false,
     ];
 
     public function assets_reservation()

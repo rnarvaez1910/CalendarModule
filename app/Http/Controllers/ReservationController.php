@@ -146,7 +146,9 @@ class ReservationController extends Controller
      */
     public function delete($id)
     {
-        Reservation::destroy($id);
+        $reservation = Reservation::with("assets_reservation.assets")->find($id);
+        $reservation->declined = true;
+        $reservation->save();
         return response()->noContent();
     }
 

@@ -14,10 +14,16 @@
             cursor: pointer;
         }
 
+        .fc-daygrid-dot-event,
+        .fc-daygrid-dot-event * {
+            color: #EED202;
+            border-color: #EED202;
+        }
+
         .fc-daygrid-dot-event.past-event,
         .fc-daygrid-dot-event.past-event * {
-            color: #001E64;
-            border-color: #001E64;
+            color: #A28F02;
+            border-color: #A28F02;
         }
 
         .fc-daygrid-dot-event.approved,
@@ -162,7 +168,7 @@
                 </button>
                 @if ($isAdmin)
                     <button type="button" class="btn btn-outline-danger" id="delete_reservation">
-                        Eliminar reserva
+                        Rechazar reserva
                     </button>
                 @endif
             </div>
@@ -358,9 +364,25 @@
         </form>
     </div>
     {{-- Formulario de reserva --}}
+    <div id="calendar_colors" class="d-flex align-items-center gap-2">
+        <span style="background-color: #EED202; width: 15px; height: 15px;" class="rounded-circle d-inline-block"></span>
+        <span>En espera</span> | <span style="background-color: #A28F02; width: 15px; height: 15px;"
+            class="rounded-circle d-inline-block"></span><span>En espera-Fecha
+            pasada</span> | <span style="background-color: #28a745; width: 15px; height: 15px;"
+            class="rounded-circle d-inline-block"></span><span>Aprobada</span> | <span
+            style="background-color: #115321; width: 15px; height: 15px;"
+            class="rounded-circle d-inline-block"></span><span>Aprobada-Fecha
+            pasada</span> | <span style="background-color: #ff5733; width: 15px; height: 15px;"
+            class="rounded-circle d-inline-block"></span><span>Rechazadada</span> | <span
+            style="background-color: #ff5733; width: 15px; height: 15px;"
+            class="rounded-circle d-inline-block"></span><span>Rechazada-Fecha
+            pasada</span>
+    </div>
     <div id="calendar"></div>
     <script>
         $(document).ready(function() {
+            $("#reservation_start").prop("min", moment().utc().format("YYYY-MM-DDT00:00"));
+
             $('#classroom').select2({
                 width: 'resolve'
             });
@@ -478,23 +500,27 @@
             }
 
             $('#professor_name').on("input", function(event) {
-                reservation.professor_name = event.target.value
+                reservation.professor_name = event.target.value;
             });
 
             $('#professor_email').on("input", function(event) {
-                reservation.professor_email = event.target.value
+                reservation.professor_email = event.target.value;
             });
 
             $('#classroom').on("input", function(event) {
-                reservation.classroom = event.target.value
+                reservation.classroom = event.target.value;
             });
 
             $('#asignature').on("input", function(event) {
-                reservation.asignature = event.target.value
+                reservation.asignature = event.target.value;
             });
 
             $('#reservation_start').on("change", function(event) {
-                reservation.reservation_start = event.target.value
+                reservation.reservation_start = event.target.value;
+                $("#reservation_end").prop("min", moment(event.target.value).utc().format(
+                    "YYYY-MM-DDT00:00"));
+                $("#reservation_end").prop("max", moment(event.target.value).utc().format(
+                    "YYYY-MM-DDT00:00"));
                 verifyAssets(
                     reservation.reservation_start,
                     reservation.reservation_end
@@ -502,7 +528,7 @@
             });
 
             $('#reservation_end').on("change", function(event) {
-                reservation.reservation_end = event.target.value
+                reservation.reservation_end = event.target.value;
                 verifyAssets(
                     reservation.reservation_start,
                     reservation.reservation_end

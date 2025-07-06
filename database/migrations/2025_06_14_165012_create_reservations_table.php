@@ -22,6 +22,7 @@ class CreateReservationsTable extends Migration
             $table->dateTime('reservation_start');
             $table->dateTime('reservation_end');
             $table->boolean('approved');
+            $table->boolean('declined');
             $table->timestamps();
         });
     }

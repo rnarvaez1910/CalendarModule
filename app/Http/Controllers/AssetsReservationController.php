@@ -78,8 +78,4 @@ class AssetsReservationController extends Controller
      * @param  \App\AssetsReservation  $assetsReservation
      * @return \Illuminate\Http\Response
      */
-    public function destroy(AssetsReservation $assetsReservation)
-    {
-        //
-    }
 }
