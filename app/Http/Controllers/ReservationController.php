@@ -52,6 +52,21 @@ class ReservationController extends Controller
         return response()->json($reservation, 201);
     }
 
+    public function verifyClassroom(Request $request)
+    {
+        $classroom = $request->query('classroom');
+        $start = $request->query('reservation_start');
+        $end = $request->query('reservation_end');
+
+        $reservation = Reservation::where('classroom', $classroom)
+        ->where(function ($q) use ($start, $end) {
+            $q->whereBetween('reservation_start', [$start, $end])
+              ->orWhereBetween('reservation_end', [$start, $end]);
+        });
+
+        return response()->json($reservation);
+    }
+
     public function verify($id)
     {
         try {
@@ -73,15 +88,49 @@ class ReservationController extends Controller
             $mail->setFrom('rnarvaez.5304@unimar.edu.ve', 'Raymond UNIMAR');
             // $mail->addAddress('raymondnarvaez19@gmail.com', 'Yo')
             $mail->addAddress($reservation->professor_email);
-            $mail->isHTML(true);
-            $mail->Subject = 'Información sobre su reserva de insumos';
-            $chainNames = "";
-            for ($i = 0; $i < $reservation->assets_reservation->count(); $i++) {
-                $chainNames .= $reservation->assets_reservation[$i]->assets->name . ', ';
-            }
-            $chainNames = rtrim($chainNames, ', ');
-            $mail->Body = 'Su reserva de ' . $chainNames . ', para el día ' . $reservation->reservation_start->format('Y-m-d H:i:s') . ', ha sido aprobada.';
-            $mail->send();
+$mail->isHTML(true);
+$mail->Subject = 'Información sobre su reserva de insumos';
+
+// Prepara los insumos reservados
+$chainNames = "";
+for ($i = 0; $i < $reservation->assets_reservation->count(); $i++) {
+    $chainNames .= $reservation->assets_reservation[$i]->assets->name . ', ';
+}
+$chainNames = rtrim($chainNames, ', ');
+
+// Formatea la fecha
+$fechaReserva = $reservation->reservation_start->format('Y-m-d H:i:s');
+
+    // Plantilla HTML
+        $mail->Body = '
+        <div style="background-color:#f4f6f8;padding:20px;font-family:sans-serif;">
+            <div style="max-width:550px;margin:0 auto;background:white;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.04);padding:32px;">
+                <h2 style="color:#233269;text-align:center;margin-bottom:8px;">¡Hola, usuario!</h2>
+                <p style="text-align:center;">Tu reserva de insumos ha sido procesada exitosamente. Aquí tienes los detalles:</p>
+                
+                <div style="display:flex;justify-content:center;align-items:center;flex-direction:column;margin:30px 0;">
+                    <div style="margin-bottom:18px;">
+                        <span style="font-weight:bold;font-size:16px;">Insumos reservados:</span><br>
+                        <span style="font-size:15px;color:#004680;">'.$chainNames.'</span>
+                    </div>
+                    <div>
+                        <span style="font-weight:bold;font-size:16px;">Fecha de la reserva:</span><br>
+                        <span style="font-size:15px;color:#004680;">'.$fechaReserva.'</span>
+                    </div>
+                </div>
+
+                <div style="text-align:center;margin-bottom:20px;">
+                    <a href="https://tusistemareservas.com/reservas" 
+                    style="background:#2176bd;color:white;padding:10px 28px;border-radius:6px;text-decoration:none;font-weight:600;display:inline-block;">Ver Detalle de la Reserva</a>
+                </div>
+
+                <p style="text-align:center;color:#666;font-size:13px;">Si tienes algún problema, responde a este correo o contacta al administrador.</p>
+                <hr style="margin:24px 0;">
+                <p style="text-align:center;font-size:11px;color:#bbb;">© '.date("Y").' Tu Empresa. Todos los derechos reservados.</p>
+            </div>
+        </div>
+        ';
+        $mail->send();
             return response()->json(['message' => 'Reservation verified and email sent successfully.'], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error retrieving reservations: ' . $e->getMessage()], 500);
@@ -157,14 +206,21 @@ class ReservationController extends Controller
         try { 
             $start = $request->query('start');
             $end = $request->query('end');
+            $declined = $request->query('declined') == "true";
 
-            $reservations = Reservation::with('assets_reservation.assets')
+            $reservationsBuilder = Reservation::with('assets_reservation.assets')
                 ->where(function ($query) use($start, $end) { 
                     $query->whereBetween('reservation_start', [$start, $end])
                     ->orWhereBetween('reservation_end', [$start, $end]);
-                })
-                ->where('approved', true)
-                ->get();
+                });
+
+            if ($declined) {
+                $reservationsBuilder = $reservationsBuilder->where('declined', true);
+            } else { 
+                $reservationsBuilder = $reservationsBuilder->where('approved', true);
+            }
+
+            $reservations = $reservationsBuilder->get();
             return view('reservation_report', compact('reservations'));
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error generating report: ' . $e->getMessage()], 500);

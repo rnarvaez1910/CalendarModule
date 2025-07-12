@@ -22,6 +22,7 @@ Route::post('/reservation', 'ReservationController@create');
 Route::delete('/reservation/{id}', 'ReservationController@delete');
 Route::get('/reservation/report', 'ReservationController@report');
 
+
 // Assets
 Route::get('/assets','AssetsController@findAllAssets');
 Route::get('/assets/verify/{id}','AssetsController@verifyAvailability');

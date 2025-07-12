@@ -55,6 +55,7 @@
 
 <body>
     <table class="reservation">
+        <span><img src="{{ URL::asset('image/logo-academico.png') }}" style="width:350px"></span>
         <tr>
             <th>
                 Profesor

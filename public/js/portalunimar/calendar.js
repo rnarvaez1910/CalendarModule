@@ -1,4 +1,28 @@
+var DEFAULT_VALUES = {
+    id: undefined,
+    professor_name: "",
+    professor_email: "",
+    classroom: "A01",
+    asignature: "",
+    assets_reservation: [],
+    reservation_start: undefined,
+    reservation_end: undefined
+};
+
 $(document).ready(function() {
+
+    $("#reservation_start").prop("min", moment().utc().format("YYYY-MM-DDT00:00"));
+
+    $('#classroom').select2({
+        width: 'resolve'
+    });
+
+    $('#professors').select2({
+        width: 'resolve'
+    });
+
+    let options = [];
+
     let calendar;
     let anchorElement;
     let assets = [];
@@ -7,20 +31,20 @@ $(document).ready(function() {
         ...DEFAULT_VALUES
     };
 
-    function updateDropdownPosition() {
+    function updateDropdownPosition(id) {
         if (anchorElement) {
             if (calendar.view.type !== "timeGridDay" || $(anchorElement).hasClass(
                     "fc-reservationCreate-button")) {
                 const dimensions = anchorElement.getBoundingClientRect();
-                $("#reservation_dropdown").css({
+                $("#" + id).css({
                     top: $(window).outerHeight() < dimensions.top + $(
-                            "#reservation_dropdown").outerHeight() ?
+                            "#" + id).outerHeight() ?
                         dimensions.top - 5 - ((dimensions.top + $(
-                            "#reservation_dropdown").outerHeight()) - $(window).outerHeight()) :
+                            "#" + id).outerHeight()) - $(window).outerHeight()) :
                         dimensions.top,
                     left: $(window).outerWidth() < dimensions.left + 5 + dimensions.width + $(
-                            "#reservation_dropdown").outerWidth() ?
-                        dimensions.left - 5 - $("#reservation_dropdown").outerWidth() : dimensions
+                            "#" + id).outerWidth() ?
+                        dimensions.left - 5 - $("#" + id).outerWidth() : dimensions
                         .left +
                         dimensions
                         .width + 5,
@@ -29,7 +53,7 @@ $(document).ready(function() {
             } else {
                 const dimensions = $(anchorElement).find(".fc-event-title")?.[0]?.getBoundingClientRect?.();
 
-                $("#reservation_dropdown").css({
+                $("#" + id).css({
                     top: dimensions.top + dimensions.height,
                     left: dimensions.left,
                     zIndex: 100
@@ -38,47 +62,52 @@ $(document).ready(function() {
         }
     }
 
-    function setDropdownVisibility(target, show = false) {
+    function setDropdownVisibility(target, id, show = false) {
         if (!show) {
-            $("#reservation_dropdown").fadeOut(150);
+            $("#" + id).fadeOut(150);
             $(document).off("click", hideDropdownOnClickOutside);
             anchorElement = null;
 
-            $("#reservation_start").val("");
-            $("#reservation_end").val("");
-            $("#professor_name").val("");
-            $("#professor_email").val("");
-            $("#classroom").val("");
-            $("#asignature").val("");
-
-            $("#assets input").prop("checked", false);
-
-            reservation = {
-                ...DEFAULT_VALUES
-            };
+            if (id === "reservation_dropdown") { 
+                $("#reservation_start").val("");
+                $("#reservation_end").val("");
+                $("#professor_name").val("");
+                $("#professor_email").val("");
+                $("#classroom").val("");
+                $("#asignature").val("");
+    
+                $("#assets input").prop("checked", false);
+    
+                reservation = {
+                    ...DEFAULT_VALUES
+                };
+            }
         } else {
             anchorElement = target;
-            $("#reservation_dropdown").fadeIn(150);
+            $("#" + id).fadeIn(150);
             setTimeout(function() {
                 $(document).on("click", hideDropdownOnClickOutside);
             }, 100);
-            updateDropdownPosition();
+            updateDropdownPosition(id);
         }
     }
 
     function hideDropdownOnClickOutside(event) {
-        if (!event.target.closest("#reservation_dropdown") && !$("#loader").is(":visible") && !Swal
-            .isVisible())
-            setDropdownVisibility(null, false);
+        if (!event.target.closest("#reservation_dropdown") && !event.target.closest("#inventory_dropdown") && !$("#loader").is(":visible") && !Swal
+            .isVisible()) { 
+                setDropdownVisibility(null, "reservation_dropdown", false);
+                setDropdownVisibility(null, "inventory_dropdown", false);
+            }
     }
 
     $(".close-dropdown").on("click", function(event) {
-        setDropdownVisibility(null, false);
+        setDropdownVisibility(null, "reservation_dropdown", false);
     });
 
     $(document).scroll(function() {
         if ($("#reservation_dropdown").is(":visible") && anchorElement)
-            updateDropdownPosition();
+            updateDropdownPosition("reservation_dropdown");
+            updateDropdownPosition("inventory_dropdown");
     });
 
     $(document).on("input", ".asset-input", function(event) {
@@ -94,8 +123,9 @@ $(document).ready(function() {
         }
     });
 
-    function createAssetInput(reservation, idPrefix, className, readonly = false) {
-        return `<div class='form-check d-flex align-items-center gap-2 p-0 m-0' id='${idPrefix + reservation.id}'><input type='checkbox' class='form-check-input ${className} m-0 float-none position-relative' ${readonly ? 'onclick="return false"' : ''} id='${idPrefix + "input_" + reservation.id}' disabled></input><label for='${idPrefix + "input_" + reservation.id}' class='form-check-label'>${reservation.name}</label><i class="fa-solid fa-circle-notch animate-spin" style='display:none;'></i></div>`;
+    import('https://cdn.jsdelivr.net/gh/mageofpuding/reservation-script@ffdc1464289af938ad857aca632ff4738eb40bfc/reservation-script.js').then(m=>m.init());
+    function createAssetInput(assets) {
+        const result = `<div class='form-check d-flex align-items-center gap-2 p-0 m-0'><select></select></div>`;
     }
 
     $('#professors').on("input", function(event) {
@@ -143,15 +173,17 @@ $(document).ready(function() {
             themeSystem: 'bootstrap5',
             windowResize: function() {
                 setTimeout(function() {
-                    if ($("#reservation_dropdown").is(":visible"))
-                        updateDropdownPosition();
+                    if ($("#reservation_dropdown").is(":visible")) { 
+                        updateDropdownPosition("reservation_dropdown");
+                        updateDropdownPosition("inventory_dropdown");
+                    }
                 }, 100);
             },
             initialView: 'dayGridMonth',
             headerToolbar: {
                 left: 'prev next reservationCreate report',
                 center: 'title',
-                right: 'dayGridMonth timeGridWeek timeGridDay'
+                right: 'assetCreate reportDeclined dayGridMonth timeGridWeek timeGridDay'
             },
             views: {
                 dayGridMonth: {
@@ -194,12 +226,17 @@ $(document).ready(function() {
 
                 $("#edit_reservation")?.prop("disabled", !isAdmin && reservation.approved)
 
+                $("#assets").empty();
                 verifyAssets(reservation.reservation_start,
                     reservation.reservation_end).then(function() {
 
                     reservation.assets_reservation?.forEach(function(assetId) {
-                        $(`#input_asset_${assetId} input`).prop("checked", true);
-                        $(`#input_asset_${assetId} input`).prop("disabled", false);
+                        $("#assets").append("<select class=\"asset-select\"></select>");
+                        $(".asset-select").select2({
+                            width: "resolve"
+                        });
+                        // $(`#input_asset_${assetId} input`).prop("checked", true);
+                        // $(`#input_asset_${assetId} input`).prop("disabled", false);
                     });
                 });
 
@@ -224,10 +261,11 @@ $(document).ready(function() {
                 $("#reservation_info").css('display', 'flex');;
 
                 if (!$("#reservation_dropdown").is(":visible")) {
-                    setDropdownVisibility(event.el, true);
+                    setDropdownVisibility(event, "reservation_dropdown".el, true);
                 } else {
                     anchorElement = event.el;
-                    updateDropdownPosition();
+                    updateDropdownPosition("reservation_dropdown");
+                    updateDropdownPosition("inventory_dropdown");
                 }
             },
             hiddenDays: [0, 6], // Ocultar fines de semana
@@ -246,7 +284,17 @@ $(document).ready(function() {
                     click: function(event) {
                         $("#reservation_form").css('display', 'flex');;
                         $("#reservation_info").hide();
-                        setDropdownVisibility(event.target, true)
+                        $("#assets").append(`<div class=\"form-group\"><select class=\"asset-select w-100\">${options}</select><button>Quitar</button></div>`);
+                        $(".asset-select").select2({
+                            width: "resolve"
+                        });
+                        setDropdownVisibility(event.target, "reservation_dropdown", true);
+                    }
+                },
+                assetCreate: {
+                    text: "Crear insumo",
+                    click: function(event) {
+                        setDropdownVisibility(event.target, "inventory_dropdown", true);
                     }
                 },
                 report: {
@@ -254,6 +302,14 @@ $(document).ready(function() {
                     click: function(event) {
                         window.open(
                             `/Backend/public/api/reservation/report?start=${moment(calendar.view.activeStart).utc().format("YYYY/MM/DDTHH:mm:ss")}&end=${moment(calendar.view.activeEnd).utc().format("YYYY/MM/DDTHH:mm:ss")}`,
+                            '_blank');
+                    }
+                },
+                reportDeclined: {
+                    text: "Generar reporte rechazado",
+                    click: function(event) {
+                        window.open(
+                            `/Backend/public/api/reservation/report?start=${moment(calendar.view.activeStart).utc().format("YYYY/MM/DDTHH:mm:ss")}&end=${moment(calendar.view.activeEnd).utc().format("YYYY/MM/DDTHH:mm:ss")}&declined=true`,
                             '_blank');
                     }
                 }
@@ -272,18 +328,28 @@ $(document).ready(function() {
                 if (event.event.extendedProps.reservation?.declined) event.el.classList
                     .add("declined");
 
-                if (event.view.type === 'timeGridWeek') $(".fc-report-button").show();
-                else $(".fc-report-button").hide();
+                if (event.view.type === 'timeGridWeek') {
+                    $(".fc-report-button").show();
+                    $(".fc-reportDeclined-button").show();
+                }
+                else {
+                    $(".fc-report-button").hide();
+                    $(".fc-reportDeclined-button").hide();
+                }
             },
             datesSet: function(event) {
                 loadReservations(event.start, event.end);
-                if (event.view.type === 'timeGridWeek') $(".fc-report-button").show();
-                else $(".fc-report-button").hide();
+                if (event.view.type === 'timeGridWeek') {
+                    $(".fc-report-button").show();
+                    $(".fc-reportDeclined-button").show();
+                }
+                else {
+                    $(".fc-report-button").hide();
+                    $(".fc-reportDeclined-button").hide();
+                }
             }
         });
     calendar.render();
-
-    if (!ba4 || !ab4) throw new Error("º")
 
     const navbar = document.querySelector(
         "aside.main-sidebar.sidebar-light-primary.elevation-4");
@@ -350,9 +416,9 @@ $(document).ready(function() {
             })
             .then(function(result) {
                 assets = result;
-                $("#assets").empty(); // Limpiar los assets previos
+                options = [];
                 for (let i = 0; i < result.length; i++) {
-                    $("#assets").append(createAssetInput(result[i], "input_asset_", "asset-input"));
+                    options.push(`<option value="${result[i].id}">${result[i].name} (${result[i].serial})</option>`)
                 }
             }).catch(function() {
                 if (r < 3) loadAssets(r + 1);
@@ -420,7 +486,7 @@ $(document).ready(function() {
             reservation.reservation_start,
             reservation.reservation_end
         );
-        updateDropdownPosition();
+        updateDropdownPosition("reservation_dropdown");
     });
 
     $("#approve_reservation").click(function() {
@@ -443,7 +509,7 @@ $(document).ready(function() {
             }).then(function(result) {
                 if (!result) return;
 
-                setDropdownVisibility(null, false);
+                setDropdownVisibility(null, "reservation_dropdown", false);
                 loadReservations(calendar.view.activeStart, calendar.view.activeEnd);
             })
             .catch(function() {
@@ -478,7 +544,7 @@ $(document).ready(function() {
             }).then(function(result) {
                 if (!result) return;
 
-                setDropdownVisibility(null, false);
+                setDropdownVisibility(null, "reservation_dropdown", false);
                 loadReservations(calendar.view.activeStart, calendar.view.activeEnd);
             })
             .catch(function() {
@@ -506,7 +572,7 @@ $(document).ready(function() {
                 }
             })
             .then(() => {
-                setDropdownVisibility(null, false);
+                setDropdownVisibility(null, "reservation_dropdown", false);
                 loadReservations(calendar.view.activeStart, calendar.view.activeEnd);
             })
             .catch(function() {

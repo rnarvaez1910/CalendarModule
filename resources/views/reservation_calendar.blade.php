@@ -30,6 +30,21 @@
             </div>
         </div>
     </div>
+    <div id="inventory_dropdown" class="p-2 border bg-white position-fixed rounded overflow-y-auto" style="display:none;">
+        <div class="form-group">
+            <label for="asset_name" class="form-label">Nombre de insumo</label>
+            <input id="asset_name" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label for="asset_serial" class="form-label">Nombre de insumo</label>
+            <input id="asset_serial" class="form-control" />
+        </div>
+        <div class="d-flex align-items-center">
+            <button class="btn btn-outline-primary">Enviar</button>
+            <span class="flex-grow-1 flex-shrink-1"></span>
+            <button class="btn btn-outline-danger">Cancelar</button>
+        </div>
+    </div>
     <div id="reservation_dropdown" class="p-2 border bg-white position-fixed rounded overflow-y-auto"
         style="display: none;">
         <div id="reservation_info" style="display: none;" class="flex-column gap-1">
@@ -265,7 +280,16 @@
                     </select>
                 </div>
             </div>
-            <div id="assets"></div>
+            <div id="assets_container">
+                <div class="d-flex align-items-center">
+                    <h6>Assets</h6>
+                    <span class="flex-grow-1 flex-shrink-1"></span>
+                    <button type="button">Agregar</button>
+                </div>
+                <div id="assets">
+
+                </div>
+            </div>
             <div class="d-flex gap-2">
                 <button type="button" class="btn btn-outline-danger close-dropdown">Cancelar</button>
                 <span class="flex-grow-1 flex-shrink-1"></span>
@@ -289,7 +313,6 @@
             pasada</span>
     </div>
     <div id="calendar"></div>
-    <button id="reservation_data_provider"></button>
     <script>
         var isAdmin = @json($isAdmin);
     </script>
