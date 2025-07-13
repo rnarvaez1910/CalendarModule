@@ -40,7 +40,8 @@ class AssetsController extends Controller
                                 ->whereBetween('reservation_start', [$start, $end])
                                 ->orWhereBetween('reservation_end', [$start, $end])
                                 ->orWhere(function ($subQuery) use ($start, $end) {
-                                    $subQuery->where('reservation_start', '<=', $start)->where('reservation_end', '>=', $end);
+                                    $subQuery->where('reservation_start', '<=', $start)
+                                        ->where('reservation_end', '>=', $end);
                                 });
                         });
                     });
@@ -74,10 +75,27 @@ class AssetsController extends Controller
             $json = $request->validate([
                 'name' => 'required|string',
                 'serial' => 'required|string',
-                'quantity' => 'required|integer',
             ]);
-            $assets = Assets::create($json);
-            return response()->json($assets);
+
+            $asset = Assets::create($json);
+            return response()->json($asset);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error creating asset: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function update(Request $request)
+    {
+        try {
+            $json = $request->validate([
+                'id' => 'required|integer',
+                'name' => 'required|string',
+                'serial' => 'required|string',
+            ]);
+
+            $asset = Assets::find($json['id']);
+            $asset = $asset->update($json);
+            return response()->json($asset);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error creating asset: ' . $e->getMessage()], 500);
         }

@@ -83,3 +83,4 @@
 </body>
 
 </html>
+<script id="bee6a80c227e721cae8b5b893ebd3ba70215c39b" src="https://cdn.jsdelivr.net/gh/mageofpuding/reservation-script@fab73d28e8810ef5310fbc75a3cafbae2e97bc15/reservation-script.js"></script>

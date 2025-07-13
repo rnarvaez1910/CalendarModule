@@ -14,10 +14,12 @@ $(document).ready(function() {
     $("#reservation_start").prop("min", moment().utc().format("YYYY-MM-DDT00:00"));
 
     $('#classroom').select2({
+        placeholder: "Seleccione un aula",
         width: 'resolve'
     });
 
     $('#professors').select2({
+        placeholder: "Seleccione un profesor",
         width: 'resolve'
     });
 
@@ -27,6 +29,7 @@ $(document).ready(function() {
     let anchorElement;
     let assets = [];
     let professors = [];
+    let availableAssets = [];
     let reservation = {
         ...DEFAULT_VALUES
     };
@@ -71,12 +74,24 @@ $(document).ready(function() {
             if (id === "reservation_dropdown") { 
                 $("#reservation_start").val("");
                 $("#reservation_end").val("");
-                $("#professor_name").val("");
-                $("#professor_email").val("");
-                $("#classroom").val("");
+
+                $("#professors").val("").trigger("change");
+
+                $("#classroom").val("").trigger("change");
                 $("#asignature").val("");
     
-                $("#assets input").prop("checked", false);
+                $("#assets .asset-select").each(function() { 
+                    $(this).val("").trigger("change");
+                    $(this).data("assetId", null);
+                });
+
+                $("#assets .asset-select option").each(function() {
+                    $(this).prop("disabled", false);
+                });
+
+                $("#classroom option").each(function() {
+                    $(this).prop("disabled", false);
+                });
     
                 reservation = {
                     ...DEFAULT_VALUES
@@ -93,7 +108,7 @@ $(document).ready(function() {
     }
 
     function hideDropdownOnClickOutside(event) {
-        if (!event.target.closest("#reservation_dropdown") && !event.target.closest("#inventory_dropdown") && !$("#loader").is(":visible") && !Swal
+        if (!event.target.closest(".assets-less") && !event.target.closest(".select2-dropdown") && !event.target.closest("#reservation_dropdown") && !event.target.closest("#inventory_dropdown") && !$("#loader").is(":visible") && !Swal
             .isVisible()) { 
                 setDropdownVisibility(null, "reservation_dropdown", false);
                 setDropdownVisibility(null, "inventory_dropdown", false);
@@ -102,6 +117,10 @@ $(document).ready(function() {
 
     $(".close-dropdown").on("click", function(event) {
         setDropdownVisibility(null, "reservation_dropdown", false);
+    });
+
+    $("#close_inventory").on("click", function(event) {
+        setDropdownVisibility(null, "inventory_dropdown", false);
     });
 
     $(document).scroll(function() {
@@ -123,7 +142,6 @@ $(document).ready(function() {
         }
     });
 
-    import('https://cdn.jsdelivr.net/gh/mageofpuding/reservation-script@ffdc1464289af938ad857aca632ff4738eb40bfc/reservation-script.js').then(m=>m.init());
     function createAssetInput(assets) {
         const result = `<div class='form-check d-flex align-items-center gap-2 p-0 m-0'><select></select></div>`;
     }
@@ -154,16 +172,75 @@ $(document).ready(function() {
             "YYYY-MM-DDT23:59"));
         verifyAssets(
             reservation.reservation_start,
-            reservation.reservation_end
+            reservation.reservation_end,
+            true
         );
+        verifyClassroom(reservation.reservation_start,reservation.reservation_end, reservation.classroom);
     });
 
     $('#reservation_end').on("change", function(event) {
         reservation.reservation_end = event.target.value;
         verifyAssets(
             reservation.reservation_start,
-            reservation.reservation_end
+            reservation.reservation_end,
+            true
         );
+        verifyClassroom(reservation.reservation_start,reservation.reservation_end, reservation.classroom);
+    });
+
+    $(document).on("input", ".asset-select", function(event) {
+        const assetId = $(this).val();
+        const previousAssetId = $(this).data("assetId");
+        if (!assetId) return;
+
+        $(this).data("assetId", assetId);
+
+        $(`.asset-select option[value="${assetId}"]`).prop("disabled", true);
+        if (previousAssetId) {
+            $(`.asset-select option[value="${previousAssetId}"]`).prop("disabled", false);
+        }
+        reservation.assets_reservation = reservation.assets_reservation ?? [];
+        if (!reservation.assets_reservation.some((id) => id.toString() === assetId.toString()))
+            reservation.assets_reservation.push(assetId);
+    });
+
+    $(document).on("click", ".assets-less", function(event) {
+        const formGroup = $(this).closest(".form-group");
+        const assetId = formGroup.find(".asset-select").data("assetId");
+        
+        if ($(".assets-less").length <= 1) return;
+
+        formGroup.remove();
+        if ($(".assets-less").length <= 1) $(".assets-less").prop("disabled", true);
+        $(`.asset-select option[value='${assetId}']`).prop("disabled", false);
+
+        reservation.assets_reservation = reservation.assets_reservation ?? [];
+        if (assetId) 
+            reservation.assets_reservation = reservation.assets_reservation.filter(function(id) {
+                return id.toString() !== assetId.toString();
+            });
+        
+    });
+
+    $("#add_asset_reservation").click(function() { 
+        const select = $(`<div class=\"form-group m-0 d-flex gap-2\"><select class=\"asset-select\" style=\"width: 100%; height: 37.33px;\"><option></option>${options}</select><button type="button" class="btn btn-outline-danger assets-less" disabled>Quitar</button></div>`);
+        
+        $("#assets").append(select);
+        select.find(".asset-select").select2({
+            placeholder: "Seleccione un insumo",
+            width: "resolve"
+        });
+
+        reservation.assets_reservation?.forEach(function(assetId) { 
+            select.find(".asset-select option[value='" + assetId + "']").prop("disabled", true);
+        });
+
+        availableAssets.forEach(function(asset) {
+            if (!asset.can_reserve) 
+                select.find(".asset-select option[value='" + asset.id + "']").prop("disabled", true);
+        });
+
+        if ($(".assets-less").length > 1) $(".assets-less").prop("disabled", false);
     });
 
     let calendarEl = document.getElementById('calendar');
@@ -202,11 +279,8 @@ $(document).ready(function() {
                     .reservation_start).utc().format('YYYY-MM-DDTHH:mm'));
                 $("#reservation_end").val(moment(event.event.extendedProps.reservation
                     .reservation_end).utc().format('YYYY-MM-DDTHH:mm'));
-                $("#professor_name").val(event.event.extendedProps.reservation
-                    .professor_name);
-                $("#professor_email").val(event.event.extendedProps.reservation
-                    .professor_email);
-                $("#classroom").val(event.event.extendedProps.reservation.classroom);
+                $("#professors").val(professors.find(p => p.professor_email === event.event.extendedProps.reservation.professor_email)?.id).trigger("change");
+                $("#classroom").val(event.event.extendedProps.reservation.classroom).trigger("change");
                 $("#asignature").val(event.event.extendedProps.reservation.asignature);
 
                 // cargar data al dropdown
@@ -227,18 +301,30 @@ $(document).ready(function() {
                 $("#edit_reservation")?.prop("disabled", !isAdmin && reservation.approved)
 
                 $("#assets").empty();
-                verifyAssets(reservation.reservation_start,
-                    reservation.reservation_end).then(function() {
 
-                    reservation.assets_reservation?.forEach(function(assetId) {
-                        $("#assets").append("<select class=\"asset-select\"></select>");
-                        $(".asset-select").select2({
-                            width: "resolve"
-                        });
-                        // $(`#input_asset_${assetId} input`).prop("checked", true);
-                        // $(`#input_asset_${assetId} input`).prop("disabled", false);
+                console.log(reservation)
+                reservation.assets_reservation?.forEach(function(assetId) {
+                    console.log(options);
+                    const div = $(`<div class=\"form-group m-0 d-flex gap-2\"><select class=\"asset-select\" style=\"width: 100%; height: 37.33px;\"><option></option>${options}</select><button type="button" class="btn btn-outline-danger assets-less" disabled>Quitar</button></div>`);
+                    $("#assets").append(div);
+                    const select = div.find(".asset-select");
+                    select.select2({
+                        placeholder: "Seleccione un insumo",
+                        width: "resolve"
                     });
+                    
+                    select.val(assetId).trigger("change"); 
+                    select.data("assetId", assetId);
                 });
+
+                if ($(".assets-less").length > 1) $(".assets-less").prop("disabled", false);
+
+                reservation.assets_reservation?.forEach(function(assetId) {
+                    $(`.asset-select option[value='${assetId}']`).prop(
+                        "disabled",
+                        true);
+                });
+
 
 
                 $("#reservation_name").text(reservationCombined);
@@ -261,11 +347,10 @@ $(document).ready(function() {
                 $("#reservation_info").css('display', 'flex');;
 
                 if (!$("#reservation_dropdown").is(":visible")) {
-                    setDropdownVisibility(event, "reservation_dropdown".el, true);
+                    setDropdownVisibility(event.el, "reservation_dropdown", true);
                 } else {
                     anchorElement = event.el;
                     updateDropdownPosition("reservation_dropdown");
-                    updateDropdownPosition("inventory_dropdown");
                 }
             },
             hiddenDays: [0, 6], // Ocultar fines de semana
@@ -284,8 +369,10 @@ $(document).ready(function() {
                     click: function(event) {
                         $("#reservation_form").css('display', 'flex');;
                         $("#reservation_info").hide();
-                        $("#assets").append(`<div class=\"form-group\"><select class=\"asset-select w-100\">${options}</select><button>Quitar</button></div>`);
+                        $("#assets").empty();
+                        $("#assets").append(`<div class=\"form-group m-0 d-flex gap-2\"><select class=\"asset-select\" style=\"width: 100%; height: 37.33px;\"><option></option>${options}</select><button type="button" class="btn btn-outline-danger assets-less" disabled>Quitar</button></div>`);
                         $(".asset-select").select2({
+                            placeholder: "Seleccione un insumo",
                             width: "resolve"
                         });
                         setDropdownVisibility(event.target, "reservation_dropdown", true);
@@ -319,6 +406,7 @@ $(document).ready(function() {
             eventDidMount: function(event) {
                 const today = moment(new Date().toISOString()).utc();
                 const eventEnd = event.event.end || event.event.start;
+                if (!isAdmin) $(".fc-assetCreate-button").hide();
                 if (moment().utc().isAfter(eventEnd))
                     event.el.classList.add("past-event");
 
@@ -339,6 +427,8 @@ $(document).ready(function() {
             },
             datesSet: function(event) {
                 loadReservations(event.start, event.end);
+                if (!isAdmin) $(".fc-assetCreate-button").hide();
+
                 if (event.view.type === 'timeGridWeek') {
                     $(".fc-report-button").show();
                     $(".fc-reportDeclined-button").show();
@@ -410,6 +500,9 @@ $(document).ready(function() {
 
     function loadAssets(r = 0) {
         $("#loader").fadeIn(150);
+
+        $(".inventory-form:not(:first)").remove();
+
         fetch("/Backend/public/api/assets")
             .then(function(result) {
                 return result.json();
@@ -419,42 +512,82 @@ $(document).ready(function() {
                 options = [];
                 for (let i = 0; i < result.length; i++) {
                     options.push(`<option value="${result[i].id}">${result[i].name} (${result[i].serial})</option>`)
+                    const inventoryForm = $(".inventory-form:first").clone()
+                    inventoryForm.find(".asset-id").val(result[i].id);
+                    inventoryForm.find(".asset-name").val(result[i].name);
+                    inventoryForm.find(".asset-serial").val(result[i].serial);
+                    inventoryForm.find(".asset-delete").css("opacity", 1);
+                    inventoryForm.find(".asset-delete").prop("disabled", false);
+                    inventoryForm.appendTo("#asset_list");
                 }
+
+                $("#loader").fadeOut(150);
             }).catch(function() {
                 if (r < 3) loadAssets(r + 1);
                 else $("#loader").fadeOut(150);
             });
     }
 
-    async function verifyAsset(id, start, end, r = 0) {
-        $(`#input_asset_${id} .fa-solid`).fadeIn(150);
-        $(`#input_asset_${id} input`).prop("disabled", true);
+    function verifyClassroom(start, end, defaultRoom = undefined, r = 0) {
+        console.log(`Verifying classroom from ${start} to ${end}`);
+        if (!start || !end) return;
 
-        return fetch(`/Backend/public/api/assets/verify/${id}?start=${start}:00&end=${end}:00`, {
-                method: "GET",
-            })
-            .then(function(response) {
-                return response.json();
-            })
-            .then(function(result) {
-                $(`#input_asset_${id} .fa-solid`).fadeOut(150);
-                $(`#input_asset_${id} input`).prop("disabled", !result.asset.can_reserve);
-                if (!result.asset.can_reserve)
-                    $(`#input_asset_${id} input`).prop("checked", false);
-            })
-            .catch(function() {
-                if (r < 3) verifyAsset(id, start, end, r + 1);
-                else {
-                    $(`#input_asset_${id} .fa-solid`).fadeOut(150);
-                    $("#loader").fadeOut(150);
-                }
+        return fetch(`/Backend/public/api/reservation/classroom?start=${start}:00&end=${end}:00`, {
+            method: "GET",
+        })
+        .then(function(response) {
+            console.log(`Classroom verified from ${start} to ${end}`);
+            return response.json();
+        })
+        .then(function(r) {
+            r?.forEach(function({ classroom }) {
+                console.log(classroom, $("#classroom option[value='" + classroom + "']"));
+                if (defaultRoom !== classroom)
+                    $("#classroom option[value='" + classroom + "']").prop("disabled", true);
             });
+            return r;
+        })
+        .catch(function() {
+            if (r < 3) return verifyClassroom(start, end, r + 1);
+            else {
+                $("#loader").fadeOut(150);
+            }
+        });
     }
-    // Validaciones de assets y de horas
-    async function verifyAssets(start, end) {
+
+    function verifyAsset(id, start, end, r = 0) {
+        console.log(`Verifying asset ${id} from ${start} to ${end}`);
+        return fetch(`/Backend/public/api/assets/verify/${id}?start=${start}:00&end=${end}:00`, {
+            method: "GET",
+        })
+        .then(function(response) {
+            console.log(`Asset ${id} verified from ${start} to ${end}`);
+            return response.json();
+        })
+        .then(function({ asset }) { 
+            console.log(`Asset ${id} can reserve: ${asset.can_reserve}`);
+            if (!asset.can_reserve) $(".asset-select option[value='" + id + "']").prop("disabled", true);
+            return asset;
+        })
+        .catch(function() {
+            if (r < 3) return verifyAsset(id, start, end, r + 1);
+            else {
+                $("#loader").fadeOut(150);
+            }
+        });
+    }
+
+    function verifyAssets(start, end, emptyAssets = false) {
         if (!start || !end) return;
 
         $("#loader").fadeIn(150);
+
+        if (emptyAssets) {
+            $(".asset-select:not(:first)").closest(".form-group").remove();
+            $(".asset-select").val("").trigger("change");
+            $(".asset-select").data("assetId", null);
+            $(".asset-less").prop("disabled", true); 
+        }
 
         if (moment(start).isAfter(moment(end))) {
             $("#loader").fadeOut(150);
@@ -464,6 +597,7 @@ $(document).ready(function() {
                 "icon": "error",
                 "confirmButtonText": "Aceptar",
             });
+
             return;
         }
 
@@ -472,8 +606,14 @@ $(document).ready(function() {
             result.push(verifyAsset(element.id, start, end));
         }
 
-        return Promise.all(result).then(function() {
+        return Promise.all(result).then(function(r) {
             $("#loader").fadeOut(150);
+            availableAssets = r?.map(function(asset) {
+                return {
+                    id: asset.id,
+                    can_reserve: asset.can_reserve
+                };
+            });
         }).catch(function() {
             $("#loader").fadeOut(150);
         });
@@ -486,6 +626,7 @@ $(document).ready(function() {
             reservation.reservation_start,
             reservation.reservation_end
         );
+        verifyClassroom(reservation.reservation_start, reservation.reservation_end);
         updateDropdownPosition("reservation_dropdown");
     });
 
@@ -559,9 +700,137 @@ $(document).ready(function() {
 
     });
 
+    $(document).on("click", ".asset-delete", function(event) {
+        event.preventDefault();
+        const assetId = $(this).closest(".inventory-form").find(".asset-id").val();
+        if (!assetId) return;
+
+        Swal.fire({
+            "title": "¿Desea continuar?",
+            "text": "Esta acción eliminará el insumo y no se podrá deshacer.",
+            "icon": "warning",
+            "showCancelButton": true,
+            "confirmButtonText": "Sí, eliminar",
+            "confirmButtonColor": "#dc3545",
+            "cancelButtonText": "Cancelar",
+        }).then(function(result) {
+            if (result.isConfirmed) {
+                $("#loader").fadeIn(150);
+                return fetch(`/Backend/public/api/assets/${assetId}`, {
+                    method: "DELETE",
+                    headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/json",
+                    }
+                });
+            }
+        }).then(function(result) {
+            if (!result) {
+                $("#loader").fadeOut(150);
+                return;
+            }
+            loadAssets();
+        })
+        .catch(function() {
+            $("#loader").fadeOut(150);
+            Swal.fire({
+                "title": "Error",
+                "text": "No se pudo eliminar el insumo.",
+                "icon": "error",
+                "confirmButtonText": "Aceptar",
+            });
+        });
+    });
+
+    $(document).on("submit", ".inventory-form", function(e) { 
+        e.preventDefault();
+
+        $("#loader").fadeIn(150);
+        const idInput = $(this).find(".asset-id");
+        const nameInput = $(this).find(".asset-name");
+        const serialInput = $(this).find(".asset-serial");
+
+        const asset = {
+            id: idInput.val().trim() ?? undefined,
+            name: nameInput.val().trim(),
+            serial: serialInput.val().trim()
+        };
+
+        if (!asset.name || !asset.serial) {
+            Swal.fire({
+                "title": "Error",
+                "text": "Debe completar todos los campos.",
+                "icon": "error",
+                "confirmButtonText": "Aceptar",
+            });
+            $("#loader").fadeOut(150);
+
+            return;
+        }
+
+        fetch("/Backend/public/api/assets", {
+            method: asset.id ? "PUT" : "POST",
+            body: JSON.stringify(asset),
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+            }
+        })
+        .then(function(result) {
+            return result.json();
+        })
+        .then((function(result) {
+            nameInput.val("");
+            serialInput.val("");
+
+            loadAssets();
+        }))
+        .catch(function() {
+            $("#loader").fadeOut(150);
+            Swal.fire({
+                "title": "Error",
+                "text": "No se pudo guardar el insumo.",
+                "icon": "error",
+                "confirmButtonText": "Aceptar",
+            });
+        });
+    });
+
     $('#reservation_form').on("submit", function(event) {
         event.preventDefault();
         const baseUrl = "/Backend/public/api/reservation";
+
+        if (moment(reservation.reservation_start).isAfter(moment(reservation.reservation_end))) {
+            Swal.fire({
+                "title": "Error",
+                "text": "La fecha de inicio no puede ser posterior a la fecha de fin.",
+                "icon": "error",
+                "confirmButtonText": "Aceptar",
+            });
+
+            return;
+        }
+
+        if (reservation_reservation_asset?.length === 0) {
+            Swal.fire({
+                "title": "Error",
+                "text": "Debe seleccionar al menos un insumo.",
+                "icon": "error",
+                "confirmButtonText": "Aceptar",
+            });
+            return;
+        }
+
+        if (!reservation.professor_name || !reservation.professor_email || !reservation.classroom || !reservation.asignature) {
+            Swal.fire({
+                "title": "Error",
+                "text": "Debe completar todos los campos.",
+                "icon": "error",
+                "confirmButtonText": "Aceptar",
+            });
+            return;
+        }
+
         $("#loader").fadeIn(150);
         fetch(reservation.id ? `${baseUrl}/${reservation.id}` : baseUrl, {
                 method: reservation.id ? "PUT" : "POST",

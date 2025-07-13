@@ -20,13 +20,15 @@ Route::put('/reservation/{id}', 'ReservationController@update');
 Route::post('/reservation/verify/{id}', 'ReservationController@verify');
 Route::post('/reservation', 'ReservationController@create');
 Route::delete('/reservation/{id}', 'ReservationController@delete');
+Route::get('/reservation/classroom', 'ReservationController@verifyClassroom');
 Route::get('/reservation/report', 'ReservationController@report');
 
 
 // Assets
-Route::get('/assets','AssetsController@findAllAssets');
-Route::get('/assets/verify/{id}','AssetsController@verifyAvailability');
+Route::get('/assets', 'AssetsController@findAllAssets');
+Route::get('/assets/verify/{id}', 'AssetsController@verifyAvailability');
 Route::post('/assets', 'AssetsController@create');
+Route::put('/assets', 'AssetsController@update');
 Route::delete('/assets/{id}', 'AssetsController@destroy');
 
 // Professors

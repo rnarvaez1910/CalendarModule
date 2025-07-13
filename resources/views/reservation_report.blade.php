@@ -75,12 +75,14 @@
             <th>
                 Asignatura
             </th>
-            <th colspan="2" id="receive">
-                Quien recibe (Nombre y firma)
-            </th>
-            <th colspan="2" id="delivery">
-                Quien entrega (Nombre y firma)
-            </th>
+            @if (!$declined)
+                <th colspan="2" id="receive">
+                    Quien recibe (Nombre y firma)
+                </th>
+                <th colspan="2" id="delivery">
+                    Quien entrega (Nombre y firma)
+                </th>
+            @endif
         </tr>
         @foreach ($reservations as $reservation)
             <tr>
@@ -106,14 +108,16 @@
                 <td>
                     {{ $reservation->asignature }}
                 </td>
-                <td>
-                </td>
-                <td>
-                </td>
-                <td>
-                </td>
-                <td>
-                </td>
+                @if (!$declined)
+                    <td>
+                    </td>
+                    <td>
+                    </td>
+                    <td>
+                    </td>
+                    <td>
+                    </td>
+                @endif
             </tr>
         @endforeach
     </table>
