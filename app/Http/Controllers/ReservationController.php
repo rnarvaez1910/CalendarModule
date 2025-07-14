@@ -117,7 +117,7 @@ class ReservationController extends Controller
                 <div style="display:flex;justify-content:center;align-items:center;flex-direction:column;margin:30px 0;">
                     <div style="margin-bottom:18px;">
                         <span style="font-weight:bold;font-size:16px;">Insumos reservados:</span><br>
-                        <span style="font-size:15px;color:#004680;">' . $chainNames . '</span>
+                        <span style="font-size:15px;color:#004680;">' . $chainNames . '</span><br>
                     </div>
                     <div>
                         <span style="font-weight:bold;font-size:16px;">Fecha de la reserva:</span><br>

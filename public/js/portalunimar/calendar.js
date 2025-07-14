@@ -142,10 +142,6 @@ $(document).ready(function() {
         }
     });
 
-    function createAssetInput(assets) {
-        const result = `<div class='form-check d-flex align-items-center gap-2 p-0 m-0'><select></select></div>`;
-    }
-
     $('#professors').on("input", function(event) {
         for (let i = 0; i < professors.length; i++) {
             if (professors[i].id == event.target.value) {
@@ -811,7 +807,7 @@ $(document).ready(function() {
             return;
         }
 
-        if (reservation_reservation_asset?.length === 0) {
+        if (reservation.reservation_asset?.length === 0) {
             Swal.fire({
                 "title": "Error",
                 "text": "Debe seleccionar al menos un insumo.",
